@@ -1,32 +1,27 @@
 ﻿using MySql.Data.MySqlClient;
+using Microsoft.EntityFrameworkCore;
+using back_end.Data;
 
-class Program
-{
-    static void Main()
-    {
-        string connectionString = "server=localhost;user=root;password=;database=Agendamentos;";
+var builder = WebApplication.CreateBuilder(args);
 
-        using (MySqlConnection conn = new MySqlConnection(connectionString))
-        {
-            try
-            {
-                conn.Open();
-                Console.WriteLine("Conexão com MySQL estabelecida com sucesso!");
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-                string query = "SELECT 1";
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        Console.WriteLine("Consulta executada: " + reader.GetInt32(0));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro: " + ex.Message);
-            }
-        }
-    }
-}
+builder.Services.AddDbContext<BookingContext>(options =>
+    options.UseMySql("server=localhost;user=root;password=;database=booking_system;", new MySqlServerVersion(new Version(8, 0, 21))));
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
