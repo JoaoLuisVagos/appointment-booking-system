@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace back_end.Models;
 
@@ -13,6 +14,10 @@ public class User
     
     [Column("email")]
     public string Email { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    [Column("senha_hash")]
+    public string PasswordHash { get; set; } = string.Empty;
 
     public ICollection<Horarios> Horarios { get; set; } = new List<Horarios>();
 }

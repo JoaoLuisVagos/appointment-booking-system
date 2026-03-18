@@ -52,3 +52,13 @@
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/MySqlConnector.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/appsettings.json
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/BCrypt.Net-Next.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using back_end.Data;
 using back_end.Models;
@@ -6,6 +7,7 @@ namespace back_end.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class HorariosController : ControllerBase
 {
     private readonly BookingContext _context;

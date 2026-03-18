@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BCrypt.Net;
 using back_end.Data;
 using back_end.Models;
 
@@ -6,6 +8,7 @@ namespace back_end.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly BookingContext _context;
@@ -34,12 +37,25 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateUser([FromBody] User user)
+    [AllowAnonymous]
+    public IActionResult CreateUser([FromBody] RegisterRequest request)
     {
-        if (user == null || string.IsNullOrEmpty(user.Nome) || string.IsNullOrEmpty(user.Email))
+        if (request == null || string.IsNullOrWhiteSpace(request.Nome) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Senha))
         {
-            return BadRequest("Nome e Email são obrigatórios.");
+            return BadRequest("Nome, Email e Senha são obrigatórios.");
         }
+
+        if (_context.Users.Any(u => u.Email == request.Email))
+        {
+            return Conflict("Já existe um usuário cadastrado com esse email.");
+        }
+
+        var user = new User
+        {
+            Nome = request.Nome,
+            Email = request.Email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha)
+        };
 
         _context.Users.Add(user);
         _context.SaveChanges();
