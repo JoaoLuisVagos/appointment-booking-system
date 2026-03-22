@@ -19,5 +19,8 @@ public class User
     [Column("senha_hash")]
     public string PasswordHash { get; set; } = string.Empty;
 
+    [Column("role")]
+    public string Role { get; set; } = "cliente";
+
     public ICollection<Horarios> Horarios { get; set; } = new List<Horarios>();
 }

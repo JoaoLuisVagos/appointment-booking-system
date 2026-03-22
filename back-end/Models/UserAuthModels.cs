@@ -3,7 +3,8 @@ namespace back_end.Models;
 public record RegisterRequest(
     string Nome,
     string Email,
-    string Senha);
+    string Senha,
+    string Role);
 
 public record LoginRequest(
     string Email,
@@ -13,4 +14,5 @@ public record AuthResponse(
     string Token,
     int UserId,
     string Nome,
-    string Email);
+    string Email,
+    string Role);

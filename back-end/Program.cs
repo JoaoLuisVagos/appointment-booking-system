@@ -10,6 +10,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Allow frontend (Vite/dev) to call this API during development
+const string CorsPolicyName = "AllowAll";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "change_this_secret_in_production";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "appointment-booking-system";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "appointment-booking-system";
@@ -47,6 +60,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -39,14 +39,15 @@ public class AuthController : ControllerBase
         {
             Nome = request.Nome,
             Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha),
+            Role = string.IsNullOrWhiteSpace(request.Role) ? "cliente" : request.Role
         };
 
         _context.Users.Add(user);
         _context.SaveChanges();
 
         var token = GenerateJwtToken(user);
-        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email));
+        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email, user.Role));
     }
 
     [HttpPost("login")]
@@ -64,7 +65,7 @@ public class AuthController : ControllerBase
         }
 
         var token = GenerateJwtToken(user);
-        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email));
+        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email, user.Role));
     }
 
     private string GenerateJwtToken(User user)
@@ -78,6 +79,7 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Nome),
+            new Claim(ClaimTypes.Role, user.Role)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
