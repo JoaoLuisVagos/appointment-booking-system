@@ -126,5 +126,5 @@ npm run dev
 
 João Luis Vagos
 
-Se você eé recrutador(a), obrigado por avaliar este projeto.
+Se você é recrutador(a), obrigado por avaliar este projeto.
 Ele representa não apenas o estado atual do codigo, mas tambem minha forma de evoluir produto com feedback rapido, foco em clareza e melhoria continua.
