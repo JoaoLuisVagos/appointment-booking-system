@@ -1,5 +1,7 @@
 ﻿using System.Text;
+using MySqlConnector;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using back_end.Data;
@@ -9,8 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
 
-// Allow frontend (Vite/dev) to call this API during development
 const string CorsPolicyName = "AllowAll";
 builder.Services.AddCors(options =>
 {
@@ -54,6 +56,35 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionFeature?.Error;
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        var message = "Ocorreu um erro interno no servidor.";
+
+        if (exception is MySqlException)
+        {
+            message = "Falha ao acessar o banco de dados. Tente novamente em instantes.";
+        }
+        else if (exception is InvalidOperationException)
+        {
+            message = "Falha de configuracao interna da aplicacao.";
+        }
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            message,
+            traceId = context.TraceIdentifier
+        });
+    });
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();

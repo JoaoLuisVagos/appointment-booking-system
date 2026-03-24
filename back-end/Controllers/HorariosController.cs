@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using back_end.Data;
 using back_end.Models;
 
@@ -20,14 +21,69 @@ public class HorariosController : ControllerBase
     [HttpGet]
     public IActionResult GetHorarios()
     {
-        var horarios = _context.Horarios.ToList();
+        var horarios = _context.Horarios
+            .AsNoTracking()
+            .Select(h => new
+            {
+                h.Id,
+                h.UsuarioId,
+                h.ProdutoId,
+                h.DataHora,
+                Usuario = h.Usuario == null
+                    ? null
+                    : new
+                    {
+                        h.Usuario.Id,
+                        h.Usuario.Nome,
+                        h.Usuario.Email,
+                        h.Usuario.Role
+                    },
+                Produto = h.Produto == null
+                    ? null
+                    : new
+                    {
+                        h.Produto.Id,
+                        h.Produto.Nome,
+                        h.Produto.Preco
+                    }
+            })
+            .ToList();
+
         return Ok(horarios);
     }
 
     [HttpGet("{id}")]
     public IActionResult GetHorario(int id)
     {
-        var horario = _context.Horarios.Find(id);
+        var horario = _context.Horarios
+            .AsNoTracking()
+            .Where(h => h.Id == id)
+            .Select(h => new
+            {
+                h.Id,
+                h.UsuarioId,
+                h.ProdutoId,
+                h.DataHora,
+                Usuario = h.Usuario == null
+                    ? null
+                    : new
+                    {
+                        h.Usuario.Id,
+                        h.Usuario.Nome,
+                        h.Usuario.Email,
+                        h.Usuario.Role
+                    },
+                Produto = h.Produto == null
+                    ? null
+                    : new
+                    {
+                        h.Produto.Id,
+                        h.Produto.Nome,
+                        h.Produto.Preco
+                    }
+            })
+            .SingleOrDefault();
+
         if (horario == null)
         {
             return NotFound("Horário não encontrado.");
@@ -57,7 +113,37 @@ public class HorariosController : ControllerBase
 
         _context.Horarios.Add(horario);
         _context.SaveChanges();
-        return CreatedAtAction(nameof(GetHorario), new { id = horario.Id }, horario);
+
+        var createdHorario = _context.Horarios
+            .AsNoTracking()
+            .Where(h => h.Id == horario.Id)
+            .Select(h => new
+            {
+                h.Id,
+                h.UsuarioId,
+                h.ProdutoId,
+                h.DataHora,
+                Usuario = h.Usuario == null
+                    ? null
+                    : new
+                    {
+                        h.Usuario.Id,
+                        h.Usuario.Nome,
+                        h.Usuario.Email,
+                        h.Usuario.Role
+                    },
+                Produto = h.Produto == null
+                    ? null
+                    : new
+                    {
+                        h.Produto.Id,
+                        h.Produto.Nome,
+                        h.Produto.Preco
+                    }
+            })
+            .Single();
+
+        return CreatedAtAction(nameof(GetHorario), new { id = horario.Id }, createdHorario);
     }
 
     [HttpPut("{id}")]

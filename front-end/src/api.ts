@@ -1,16 +1,15 @@
 import { AuthState, Horario, Product, User } from "./types";
-import { API_BASE, buildAuthHeaders } from "./auth";
+import { API_BASE, buildAuthHeaders, extractApiErrorMessage, safeFetch } from "./auth";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || res.statusText);
+    throw new Error(await extractApiErrorMessage(res));
   }
   return (await res.json()) as T;
 }
 
 export async function getProducts(auth?: AuthState): Promise<Product[]> {
-  const res = await fetch(`${API_BASE}/products`, {
+  const res = await safeFetch(`${API_BASE}/products`, {
     method: "GET",
     headers: buildAuthHeaders(auth),
   });
@@ -21,7 +20,7 @@ export async function createProduct(
   data: { nome: string; preco: number },
   auth?: AuthState
 ): Promise<Product> {
-  const res = await fetch(`${API_BASE}/products`, {
+  const res = await safeFetch(`${API_BASE}/products`, {
     method: "POST",
     headers: buildAuthHeaders(auth),
     body: JSON.stringify(data),
@@ -30,17 +29,17 @@ export async function createProduct(
 }
 
 export async function deleteProduct(id: number, auth?: AuthState): Promise<void> {
-  const res = await fetch(`${API_BASE}/products/${id}`, {
+  const res = await safeFetch(`${API_BASE}/products/${id}`, {
     method: "DELETE",
     headers: buildAuthHeaders(auth),
   });
   if (!res.ok) {
-    throw new Error((await res.text()) || "Erro ao deletar produto");
+    throw new Error(await extractApiErrorMessage(res));
   }
 }
 
 export async function getHorarios(auth?: AuthState): Promise<Horario[]> {
-  const res = await fetch(`${API_BASE}/horarios`, {
+  const res = await safeFetch(`${API_BASE}/horarios`, {
     method: "GET",
     headers: buildAuthHeaders(auth),
   });
@@ -51,7 +50,7 @@ export async function createHorario(
   data: { usuarioId: number; produtoId: number; dataHora: string },
   auth?: AuthState
 ): Promise<Horario> {
-  const res = await fetch(`${API_BASE}/horarios`, {
+  const res = await safeFetch(`${API_BASE}/horarios`, {
     method: "POST",
     headers: buildAuthHeaders(auth),
     body: JSON.stringify(data),
@@ -60,7 +59,7 @@ export async function createHorario(
 }
 
 export async function getUsers(auth?: AuthState): Promise<User[]> {
-  const res = await fetch(`${API_BASE}/users`, {
+  const res = await safeFetch(`${API_BASE}/users`, {
     method: "GET",
     headers: buildAuthHeaders(auth),
   });
