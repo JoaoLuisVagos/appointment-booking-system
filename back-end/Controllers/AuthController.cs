@@ -35,19 +35,25 @@ public class AuthController : ControllerBase
             return Conflict("Já existe um usuário cadastrado com esse email.");
         }
 
+        var normalizedRole = NormalizeRole(request.Role);
+        if (normalizedRole != "cliente" && normalizedRole != "loja" && normalizedRole != "funcionario")
+        {
+            return BadRequest("Role inválida. Use: cliente, loja ou funcionario.");
+        }
+
         var user = new User
         {
             Nome = request.Nome,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha),
-            Role = string.IsNullOrWhiteSpace(request.Role) ? "cliente" : request.Role
+            Role = normalizedRole
         };
 
         _context.Users.Add(user);
         _context.SaveChanges();
 
         var token = GenerateJwtToken(user);
-        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email, user.Role));
+        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role)));
     }
 
     [HttpPost("login")]
@@ -65,7 +71,7 @@ public class AuthController : ControllerBase
         }
 
         var token = GenerateJwtToken(user);
-        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email, user.Role));
+        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role)));
     }
 
     private string GenerateJwtToken(User user)
@@ -79,7 +85,7 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Nome),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, NormalizeRole(user.Role))
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
@@ -94,5 +100,21 @@ public class AuthController : ControllerBase
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string NormalizeRole(string? role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
+            return "cliente";
+        }
+
+        var normalizedRole = role.Trim().ToLowerInvariant();
+        if (normalizedRole == "vendedor")
+        {
+            return "loja";
+        }
+
+        return normalizedRole;
     }
 }
