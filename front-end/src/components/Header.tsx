@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { AuthState } from "../types";
 import { saveAuth } from "../auth";
+import { isLojaRole } from "../roles";
 
 interface HeaderProps {
   auth: AuthState | null;
@@ -28,13 +29,16 @@ export function Header({ auth, onLogout }: HeaderProps) {
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Registrar</Link>
+            <Link to="/register/loja">Registrar loja</Link>
           </>
         )}
         {auth && (
           <>
-            {auth.role === "vendedor" ? (
+            {isLojaRole(auth.role) ? (
               <>
-                <Link to="/vendedor">Painel</Link>
+                <Link to="/loja/dashboard">Painel</Link>
+                <Link to="/loja/cadastros">Cadastros</Link>
+                <Link to="/loja/horarios">Horários</Link>
               </>
             ) : (
               <>

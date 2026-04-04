@@ -54,7 +54,8 @@ public class UsersController : ControllerBase
         {
             Nome = request.Nome,
             Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha),
+            Role = NormalizeRole(request.Role)
         };
 
         _context.Users.Add(user);
@@ -94,5 +95,26 @@ public class UsersController : ControllerBase
         _context.Users.Remove(user);
         _context.SaveChanges();
         return NoContent();
+    }
+
+    private static string NormalizeRole(string? role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
+            return "cliente";
+        }
+
+        var normalizedRole = role.Trim().ToLowerInvariant();
+        if (normalizedRole == "vendedor")
+        {
+            return "loja";
+        }
+
+        if (normalizedRole != "cliente" && normalizedRole != "loja" && normalizedRole != "funcionario")
+        {
+            return "cliente";
+        }
+
+        return normalizedRole;
     }
 }

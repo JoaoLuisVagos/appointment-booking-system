@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthState, UserRole } from "../types";
 import { register } from "../auth";
+import { isLojaRole } from "../roles";
 
 interface RegisterPageProps {
   onRegister: (auth: AuthState) => void;
@@ -24,8 +25,8 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
     try {
       const auth = await register(nome.trim(), email.trim(), senha, role);
       onRegister(auth);
-      if (auth.role === "vendedor") {
-        navigate("/vendedor");
+      if (isLojaRole(auth.role)) {
+        navigate("/loja");
       } else {
         navigate("/cliente");
       }
@@ -44,7 +45,7 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
           <p>Comece agora com um painel moderno para vendas e agendamentos, com tudo em um unico lugar.</p>
           <ul className="auth-points">
             <li>Cadastro rapido e intuitivo</li>
-            <li>Perfis de cliente e vendedor</li>
+            <li>Perfis de cliente e funcionario</li>
             <li>Pronto para atender melhor</li>
           </ul>
         </aside>
@@ -89,13 +90,16 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
               Tipo de usuario
               <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
                 <option value="cliente">Cliente</option>
-                <option value="vendedor">Vendedor</option>
+                <option value="funcionario">Funcionario</option>
               </select>
             </label>
             {error && <div className="error">{error}</div>}
             <button type="submit" disabled={loading}>
               {loading ? "Cadastrando..." : "Cadastrar"}
             </button>
+            <p className="auth-helper-text">
+              Quer cadastrar uma loja? <Link to="/register/loja">Use o cadastro de loja</Link>.
+            </p>
           </form>
         </div>
       </div>

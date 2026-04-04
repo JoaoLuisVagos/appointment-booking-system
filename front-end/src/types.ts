@@ -1,4 +1,4 @@
-export type UserRole = "cliente" | "vendedor";
+export type UserRole = "cliente" | "loja" | "funcionario" | "vendedor";
 
 export interface AuthResponse {
   token: string;

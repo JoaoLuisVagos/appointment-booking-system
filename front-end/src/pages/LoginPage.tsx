@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthState } from "../types";
 import { login } from "../auth";
+import { isLojaRole } from "../roles";
 
 interface LoginPageProps {
   onLogin: (auth: AuthState) => void;
@@ -22,8 +23,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const auth = await login(email.trim(), senha);
       onLogin(auth);
-      if (auth.role === "vendedor") {
-        navigate("/vendedor");
+      if (isLojaRole(auth.role)) {
+        navigate("/loja");
       } else {
         navigate("/cliente");
       }
