@@ -14,15 +14,59 @@ import CadastrosPage from './pages/CadastrosPage';
 import HorariosPage from './pages/HorariosPage';
 import FuncionariosPage from './pages/FuncionariosPage';
 import ClientePage from './pages/ClientePage';
+import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import { isLojaRole } from './roles';
+import { getMinhaLojaSettings } from './api';
+import {
+  DEFAULT_STORE_SETTINGS,
+  deriveSecondaryColor,
+  StoreSettings,
+} from './storeSettings';
 
 function App() {
   const [auth, setAuth] = useState<AuthState | null>(null);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
 
   useEffect(() => {
     const savedAuth = loadAuth();
     setAuth(savedAuth);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadSettings = async () => {
+      if (!auth || !isLojaRole(auth.role)) {
+        if (active) {
+          setStoreSettings(DEFAULT_STORE_SETTINGS);
+        }
+        return;
+      }
+
+      try {
+        const settings = await getMinhaLojaSettings(auth);
+        if (active) {
+          setStoreSettings(settings);
+        }
+      } catch {
+        if (active) {
+          setStoreSettings(DEFAULT_STORE_SETTINGS);
+        }
+      }
+    };
+
+    loadSettings();
+
+    return () => {
+      active = false;
+    };
+  }, [auth]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--primary', storeSettings.primaryColor);
+    root.style.setProperty('--primary-2', deriveSecondaryColor(storeSettings.primaryColor));
+  }, [storeSettings]);
 
   const handleLogin = (authData: AuthState) => {
     setAuth(authData);
@@ -49,7 +93,7 @@ function App() {
             },
           }}
         />
-        <Header auth={auth} onLogout={handleLogout} />
+        <Header auth={auth} onLogout={handleLogout} storeSettings={storeSettings} />
         <Routes>
           <Route
             path="/login"
@@ -110,6 +154,20 @@ function App() {
             element={
               <ProtectedRoute auth={auth} allowedRoles={['loja']}>
                 {auth && <FuncionariosPage auth={auth} />}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loja/configuracoes"
+            element={
+              <ProtectedRoute auth={auth} allowedRoles={['loja']}>
+                {auth && (
+                  <ConfiguracoesPage
+                    auth={auth}
+                    settings={storeSettings}
+                    onSettingsChange={setStoreSettings}
+                  />
+                )}
               </ProtectedRoute>
             }
           />

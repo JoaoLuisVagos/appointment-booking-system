@@ -106,6 +106,12 @@ export function DashboardPage({ auth }: DashboardPageProps) {
                 <strong>Cadastrar funcionários</strong>
               </Link>
             )}
+            {isLojaOwner && (
+              <Link className="dashboard-link-card" to="/loja/configuracoes">
+                <span>Personalização</span>
+                <strong>Configurar loja</strong>
+              </Link>
+            )}
             <Link className="dashboard-link-card" to="/loja/horarios">
               <span>{isFuncionario ? "Meus horários" : "Horários cadastrados"}</span>
               <strong>{isFuncionario ? "Ver meus atendimentos" : "Ver agenda"}</strong>

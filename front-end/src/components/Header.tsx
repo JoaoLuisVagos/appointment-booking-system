@@ -2,13 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthState } from "../types";
 import { saveAuth } from "../auth";
 import { isLojaOwnerRole, isLojaRole } from "../roles";
+import { StoreSettings } from "../storeSettings";
 
 interface HeaderProps {
   auth: AuthState | null;
   onLogout: () => void;
+  storeSettings: StoreSettings;
 }
 
-export function Header({ auth, onLogout }: HeaderProps) {
+export function Header({ auth, onLogout, storeSettings }: HeaderProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,7 +23,12 @@ export function Header({ auth, onLogout }: HeaderProps) {
     <header className="header">
       <div className="header__brand">
         <Link to="/" className="header__logo">
-          BookingApp
+          <span className="header__brand-content">
+            {storeSettings.logoUrl ? (
+              <img src={storeSettings.logoUrl} alt="Logo da loja" className="header__brand-logo" />
+            ) : null}
+            <span>{storeSettings.nomeLoja || "BookingApp"}</span>
+          </span>
         </Link>
       </div>
       <nav className="header__nav">
@@ -40,6 +47,7 @@ export function Header({ auth, onLogout }: HeaderProps) {
                 <Link to="/loja/cadastros">Cadastros</Link>
                 <Link to="/loja/horarios">Horários</Link>
                 {isLojaOwnerRole(auth.role) && <Link to="/loja/funcionarios">Funcionários</Link>}
+                {isLojaOwnerRole(auth.role) && <Link to="/loja/configuracoes">Configurações</Link>}
               </>
             ) : (
               <>

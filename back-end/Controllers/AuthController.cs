@@ -55,6 +55,16 @@ public class AuthController : ControllerBase
         if (normalizedRole == "loja")
         {
             user.LojaId = user.Id;
+
+            var loja = new Loja
+            {
+                Id = user.Id,
+                Nome = string.IsNullOrWhiteSpace(request.Nome) ? "BookingApp" : request.Nome.Trim(),
+                CorPrimaria = "#0e7490",
+                UsuarioAdminId = user.Id
+            };
+
+            _context.Lojas.Add(loja);
             _context.SaveChanges();
         }
 

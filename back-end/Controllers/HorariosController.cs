@@ -402,22 +402,9 @@ public class HorariosController : ControllerBase
             return null;
         }
 
-        var user = _context.Users
+        return _context.Users
             .Where(u => u.Id == userId.Value)
-            .Select(u => new { u.Id, u.Role, u.LojaId })
+            .Select(u => u.LojaId)
             .SingleOrDefault();
-
-        if (user == null)
-        {
-            return null;
-        }
-
-        var role = (user.Role ?? string.Empty).Trim().ToLowerInvariant();
-        if (role == "loja")
-        {
-            return user.LojaId ?? user.Id;
-        }
-
-        return user.LojaId;
     }
 }

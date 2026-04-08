@@ -8,6 +8,7 @@ public class BookingContext : DbContext
     public BookingContext(DbContextOptions<BookingContext> options) : base(options) { }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Loja> Lojas { get; set; }
     public DbSet<Products> Products { get; set; }
     public DbSet<Horarios> Horarios { get; set; }
 

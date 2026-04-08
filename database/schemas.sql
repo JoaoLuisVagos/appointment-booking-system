@@ -1,6 +1,16 @@
 CREATE DATABASE IF NOT EXISTS booking_system;
 USE booking_system;
 
+CREATE TABLE IF NOT EXISTS lojas (
+    id INT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(30) NULL,
+    endereco VARCHAR(200) NULL,
+    cor_primaria VARCHAR(7) NOT NULL DEFAULT '#0e7490',
+    logo_url VARCHAR(500) NULL,
+    usuario_admin_id INT NULL
+);
+
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -8,7 +18,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     senha_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'cliente',
     loja_id INT NULL,
-    FOREIGN KEY (loja_id) REFERENCES usuarios(id)
+    FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );
 
 CREATE TABLE IF NOT EXISTS produtos (
@@ -16,7 +26,7 @@ CREATE TABLE IF NOT EXISTS produtos (
     nome VARCHAR(100) NOT NULL,
     preco DECIMAL(10,2),
     loja_id INT NULL,
-    FOREIGN KEY (loja_id) REFERENCES usuarios(id)
+    FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );
 
 CREATE TABLE IF NOT EXISTS horarios (
@@ -28,5 +38,5 @@ CREATE TABLE IF NOT EXISTS horarios (
     
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (produto_id) REFERENCES produtos(id),
-    FOREIGN KEY (loja_id) REFERENCES usuarios(id)
+    FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );

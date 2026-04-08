@@ -1,5 +1,6 @@
 import { AuthState, Horario, Product, User } from "./types";
 import { API_BASE, buildAuthHeaders, extractApiErrorMessage, safeFetch } from "./auth";
+import { DEFAULT_STORE_SETTINGS, StoreSettings } from "./storeSettings";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -114,4 +115,44 @@ export async function deleteUser(id: number, auth?: AuthState): Promise<void> {
   if (!res.ok) {
     throw new Error(await extractApiErrorMessage(res));
   }
+}
+
+type LojaSettingsResponse = {
+  nomeLoja: string;
+  telefone: string;
+  endereco: string;
+  primaryColor: string;
+  logoUrl: string;
+};
+
+function toStoreSettings(data: Partial<LojaSettingsResponse>): StoreSettings {
+  return {
+    nomeLoja: data.nomeLoja?.trim() || DEFAULT_STORE_SETTINGS.nomeLoja,
+    telefone: data.telefone?.trim() || "",
+    endereco: data.endereco?.trim() || "",
+    primaryColor: data.primaryColor || DEFAULT_STORE_SETTINGS.primaryColor,
+    logoUrl: data.logoUrl?.trim() || "",
+  };
+}
+
+export async function getMinhaLojaSettings(auth?: AuthState): Promise<StoreSettings> {
+  const res = await safeFetch(`${API_BASE}/lojas/minha-loja`, {
+    method: "GET",
+    headers: buildAuthHeaders(auth),
+  });
+  const data = await handleResponse<LojaSettingsResponse>(res);
+  return toStoreSettings(data);
+}
+
+export async function updateMinhaLojaSettings(
+  data: StoreSettings,
+  auth?: AuthState
+): Promise<StoreSettings> {
+  const res = await safeFetch(`${API_BASE}/lojas/minha-loja`, {
+    method: "PUT",
+    headers: buildAuthHeaders(auth),
+    body: JSON.stringify(data),
+  });
+  const updated = await handleResponse<LojaSettingsResponse>(res);
+  return toStoreSettings(updated);
 }

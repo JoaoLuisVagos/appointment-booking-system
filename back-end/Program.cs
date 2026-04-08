@@ -99,10 +99,29 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<BookingContext>();
 
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS lojas (
+            id INT PRIMARY KEY,
+            nome VARCHAR(100) NOT NULL,
+            telefone VARCHAR(30) NULL,
+            endereco VARCHAR(200) NULL,
+            cor_primaria VARCHAR(7) NOT NULL DEFAULT '#0e7490',
+            logo_url VARCHAR(500) NULL,
+            usuario_admin_id INT NULL
+        )");
+
     db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS loja_id INT NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE horarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+
     db.Database.ExecuteSqlRaw("UPDATE usuarios SET loja_id = id WHERE role = 'loja' AND (loja_id IS NULL OR loja_id = 0)");
+
+    db.Database.ExecuteSqlRaw(@"
+        INSERT INTO lojas (id, nome, cor_primaria, usuario_admin_id)
+        SELECT u.id, COALESCE(NULLIF(u.nome, ''), 'BookingApp'), '#0e7490', u.id
+        FROM usuarios u
+        LEFT JOIN lojas l ON l.id = u.loja_id
+        WHERE u.role = 'loja' AND u.loja_id IS NOT NULL AND l.id IS NULL");
 }
 
 app.MapControllers();
