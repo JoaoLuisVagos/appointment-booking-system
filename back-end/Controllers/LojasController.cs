@@ -60,6 +60,7 @@ public class LojasController : ControllerBase
         loja.Telefone = string.IsNullOrWhiteSpace(request.Telefone) ? null : request.Telefone.Trim();
         loja.Endereco = string.IsNullOrWhiteSpace(request.Endereco) ? null : request.Endereco.Trim();
         loja.CorPrimaria = NormalizeHexColor(request.PrimaryColor);
+        loja.CorSecundariaFonte = NormalizeSecondaryFontColor(request.SecondaryFontColor);
         loja.LogoUrl = string.IsNullOrWhiteSpace(request.LogoUrl) ? null : request.LogoUrl.Trim();
 
         _context.SaveChanges();
@@ -76,6 +77,7 @@ public class LojasController : ControllerBase
             Telefone = loja.Telefone ?? string.Empty,
             Endereco = loja.Endereco ?? string.Empty,
             PrimaryColor = NormalizeHexColor(loja.CorPrimaria),
+            SecondaryFontColor = NormalizeSecondaryFontColor(loja.CorSecundariaFonte),
             LogoUrl = loja.LogoUrl ?? string.Empty
         };
     }
@@ -91,6 +93,19 @@ public class LojasController : ControllerBase
         return System.Text.RegularExpressions.Regex.IsMatch(value, "^#([A-Fa-f0-9]{6})$")
             ? value
             : "#0e7490";
+    }
+
+    private static string NormalizeSecondaryFontColor(string? color)
+    {
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            return "#5f6f82";
+        }
+
+        var value = color.Trim();
+        return System.Text.RegularExpressions.Regex.IsMatch(value, "^#([A-Fa-f0-9]{6})$")
+            ? value
+            : "#5f6f82";
     }
 
     private int? GetCurrentUserId()
@@ -133,4 +148,5 @@ public record UpdateLojaRequest(
     string Telefone,
     string Endereco,
     string PrimaryColor,
+    string SecondaryFontColor,
     string LogoUrl);

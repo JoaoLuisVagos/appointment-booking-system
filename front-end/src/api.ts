@@ -122,6 +122,7 @@ type LojaSettingsResponse = {
   telefone: string;
   endereco: string;
   primaryColor: string;
+  secondaryFontColor: string;
   logoUrl: string;
 };
 
@@ -131,6 +132,7 @@ function toStoreSettings(data: Partial<LojaSettingsResponse>): StoreSettings {
     telefone: data.telefone?.trim() || "",
     endereco: data.endereco?.trim() || "",
     primaryColor: data.primaryColor || DEFAULT_STORE_SETTINGS.primaryColor,
+    secondaryFontColor: data.secondaryFontColor || DEFAULT_STORE_SETTINGS.secondaryFontColor,
     logoUrl: data.logoUrl?.trim() || "",
   };
 }

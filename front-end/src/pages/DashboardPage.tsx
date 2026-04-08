@@ -107,7 +107,7 @@ export function DashboardPage({ auth }: DashboardPageProps) {
               </Link>
             )}
             {isLojaOwner && (
-              <Link className="dashboard-link-card" to="/loja/configuracoes">
+              <Link className="dashboard-link-card" to="/configuracoes">
                 <span>Personalização</span>
                 <strong>Configurar loja</strong>
               </Link>

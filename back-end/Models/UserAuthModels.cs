@@ -4,7 +4,8 @@ public record RegisterRequest(
     string Nome,
     string Email,
     string Senha,
-    string Role);
+    string Role,
+    int? LojaId);
 
 public record LoginRequest(
     string Email,

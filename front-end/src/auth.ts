@@ -82,12 +82,13 @@ export async function register(
   nome: string,
   email: string,
   senha: string,
-  role: string
+  role: string,
+  lojaId?: number
 ): Promise<AuthResponse> {
   const res = await safeFetch(`${API_BASE}/auth/register`, {
     method: "POST",
     headers: buildAuthHeaders(),
-    body: JSON.stringify({ nome, email, senha, role }),
+    body: JSON.stringify({ nome, email, senha, role, lojaId }),
   });
   if (!res.ok) {
     throw new Error(await extractApiErrorMessage(res));

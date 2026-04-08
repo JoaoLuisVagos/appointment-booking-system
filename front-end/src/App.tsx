@@ -20,6 +20,7 @@ import { getMinhaLojaSettings } from './api';
 import {
   DEFAULT_STORE_SETTINGS,
   deriveSecondaryColor,
+  hexToRgbString,
   StoreSettings,
 } from './storeSettings';
 
@@ -64,8 +65,14 @@ function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--primary', storeSettings.primaryColor);
-    root.style.setProperty('--primary-2', deriveSecondaryColor(storeSettings.primaryColor));
+    const primary = storeSettings.primaryColor;
+    const primary2 = deriveSecondaryColor(primary);
+
+    root.style.setProperty('--primary', primary);
+    root.style.setProperty('--primary-2', primary2);
+    root.style.setProperty('--primary-rgb', hexToRgbString(primary));
+    root.style.setProperty('--primary-2-rgb', hexToRgbString(primary2));
+    root.style.setProperty('--secondary-font', storeSettings.secondaryFontColor);
   }, [storeSettings]);
 
   const handleLogin = (authData: AuthState) => {
@@ -107,6 +114,16 @@ function App() {
           />
           <Route
             path="/register"
+            element={
+              auth ? (
+                <Navigate to={isLojaRole(auth.role) ? '/loja/dashboard' : '/cliente'} replace />
+              ) : (
+                <RegisterPage onRegister={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/cadastro_cliente/:lojaId"
             element={
               auth ? (
                 <Navigate to={isLojaRole(auth.role) ? '/loja/dashboard' : '/cliente'} replace />

@@ -49,6 +49,17 @@ public class AuthController : ControllerBase
             Role = normalizedRole
         };
 
+        if (normalizedRole == "cliente" && request.LojaId.HasValue)
+        {
+            var lojaExists = _context.Lojas.Any(l => l.Id == request.LojaId.Value);
+            if (!lojaExists)
+            {
+                return BadRequest("Loja informada não encontrada.");
+            }
+
+            user.LojaId = request.LojaId.Value;
+        }
+
         _context.Users.Add(user);
         _context.SaveChanges();
 

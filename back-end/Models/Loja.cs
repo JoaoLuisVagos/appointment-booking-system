@@ -23,6 +23,9 @@ public class Loja
     [Column("cor_primaria")]
     public string CorPrimaria { get; set; } = "#0e7490";
 
+    [Column("cor_secundaria_fonte")]
+    public string CorSecundariaFonte { get; set; } = "#5f6f82";
+
     [Column("logo_url")]
     public string? LogoUrl { get; set; }
 

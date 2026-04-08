@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthState } from "../types";
 import { register } from "../auth";
@@ -10,6 +10,10 @@ interface RegisterPageProps {
 }
 
 export function RegisterPage({ onRegister }: RegisterPageProps) {
+  const { lojaId: lojaIdParam } = useParams<{ lojaId?: string }>();
+  const lojaId = lojaIdParam ? Number(lojaIdParam) : undefined;
+  const hasLojaInvite = Number.isFinite(lojaId) && (lojaId ?? 0) > 0;
+
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -23,9 +27,15 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
     setLoading(true);
 
     try {
-      const auth = await register(nome.trim(), email.trim(), senha, "cliente");
+      const auth = await register(
+        nome.trim(),
+        email.trim(),
+        senha,
+        "cliente",
+        hasLojaInvite ? lojaId : undefined
+      );
       onRegister(auth);
-      toast.success("Conta criada com sucesso.");
+      toast.success(hasLojaInvite ? "Cadastro concluído e cliente vinculado à loja." : "Conta criada com sucesso.");
       if (isLojaRole(auth.role)) {
         navigate("/loja");
       } else {
@@ -45,10 +55,14 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
       <div className="auth-shell">
         <aside className="auth-side">
           <h1>Crie sua conta em minutos</h1>
-          <p>Comece agora com um painel moderno para vendas e agendamentos, com tudo em um unico lugar.</p>
+          <p>
+            {hasLojaInvite
+              ? "Você foi convidado por uma loja. Complete seu cadastro para já entrar com vínculo correto."
+              : "Comece agora com um painel moderno para vendas e agendamentos, com tudo em um unico lugar."}
+          </p>
           <ul className="auth-points">
             <li>Cadastro rapido e intuitivo</li>
-            <li>Cadastro direto para clientes</li>
+            <li>{hasLojaInvite ? "Cadastro já vinculado à loja" : "Cadastro direto para clientes"}</li>
             <li>Pronto para atender melhor</li>
           </ul>
         </aside>
@@ -93,9 +107,11 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
             <button type="submit" disabled={loading}>
               {loading ? "Cadastrando..." : "Cadastrar"}
             </button>
-            <p className="auth-helper-text">
-              Funcionários devem ser criados pela loja no painel. Para lojas, <Link to="/register/loja">use o cadastro de loja</Link>.
-            </p>
+            {!hasLojaInvite && (
+              <p className="auth-helper-text">
+                Funcionários devem ser criados pela loja no painel. Para lojas, <Link to="/register/loja">use o cadastro de loja</Link>.
+              </p>
+            )}
           </form>
         </div>
       </div>

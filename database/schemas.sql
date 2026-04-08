@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS lojas (
     telefone VARCHAR(30) NULL,
     endereco VARCHAR(200) NULL,
     cor_primaria VARCHAR(7) NOT NULL DEFAULT '#0e7490',
+    cor_secundaria_fonte VARCHAR(7) NOT NULL DEFAULT '#5f6f82',
     logo_url VARCHAR(500) NULL,
     usuario_admin_id INT NULL
 );

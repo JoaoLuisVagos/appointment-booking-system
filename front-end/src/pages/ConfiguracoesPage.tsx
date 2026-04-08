@@ -17,11 +17,15 @@ interface ConfiguracoesPageProps {
 
 export function ConfiguracoesPage({ auth, settings, onSettingsChange }: ConfiguracoesPageProps) {
   const isLoja = isLojaOwnerRole(auth.role);
+  const cadastroClienteLink = isLoja && auth.lojaId
+    ? `${window.location.origin}/cadastro_cliente/${auth.lojaId}`
+    : "";
 
   const [nomeLoja, setNomeLoja] = useState(settings.nomeLoja);
   const [telefone, setTelefone] = useState(settings.telefone);
   const [endereco, setEndereco] = useState(settings.endereco);
   const [primaryColor, setPrimaryColor] = useState(settings.primaryColor);
+  const [secondaryFontColor, setSecondaryFontColor] = useState(settings.secondaryFontColor);
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl);
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -35,6 +39,7 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
     setTelefone(settings.telefone);
     setEndereco(settings.endereco);
     setPrimaryColor(settings.primaryColor);
+    setSecondaryFontColor(settings.secondaryFontColor);
     setLogoUrl(settings.logoUrl);
   }, [settings]);
 
@@ -82,9 +87,10 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
       telefone: telefone.trim(),
       endereco: endereco.trim(),
       primaryColor: normalizeHexColor(primaryColor),
+      secondaryFontColor: normalizeHexColor(secondaryFontColor),
       logoUrl: logoUrl.trim(),
     }),
-    [nomeLoja, telefone, endereco, primaryColor, logoUrl]
+    [nomeLoja, telefone, endereco, primaryColor, secondaryFontColor, logoUrl]
   );
 
   const handleSave = async (event: React.FormEvent) => {
@@ -136,6 +142,7 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
       setTelefone(saved.telefone);
       setEndereco(saved.endereco);
       setPrimaryColor(saved.primaryColor);
+      setSecondaryFontColor(saved.secondaryFontColor);
       setLogoUrl(saved.logoUrl);
 
       onSettingsChange(saved);
@@ -143,6 +150,19 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao restaurar configurações";
       toast.error(message);
+    }
+  };
+
+  const handleCopyCadastroLink = async () => {
+    if (!cadastroClienteLink) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(cadastroClienteLink);
+      toast.success("Link de cadastro copiado.");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
     }
   };
 
@@ -216,6 +236,22 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
                   </div>
                 </label>
                 <label>
+                  Cor secundária de fonte
+                  <div className="color-field">
+                    <input
+                      type="color"
+                      value={normalizeHexColor(secondaryFontColor)}
+                      onChange={(e) => setSecondaryFontColor(e.target.value)}
+                      aria-label="Selecionar cor secundária de fonte"
+                    />
+                    <input
+                      value={secondaryFontColor}
+                      onChange={(e) => setSecondaryFontColor(e.target.value)}
+                      placeholder="#5f6f82"
+                    />
+                  </div>
+                </label>
+                <label>
                   URL da logo
                   <input
                     value={logoUrl}
@@ -228,6 +264,16 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
                   <button type="submit">Salvar configurações</button>
                   <button type="button" className="action-secondary" onClick={handleReset}>
                     Restaurar padrão
+                  </button>
+                </div>
+
+                <div className="invite-link-box">
+                  <label>
+                    Link público para cadastro de clientes da sua loja
+                    <input value={cadastroClienteLink} readOnly />
+                  </label>
+                  <button type="button" className="action-secondary" onClick={handleCopyCadastroLink}>
+                    Copiar link
                   </button>
                 </div>
               </>
@@ -306,8 +352,8 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
                 )}
                 <strong>{preview.nomeLoja}</strong>
               </div>
-              <p>{preview.telefone || "Telefone não informado"}</p>
-              <p>{preview.endereco || "Endereço não informado"}</p>
+              <p style={{ color: preview.secondaryFontColor }}>{preview.telefone || "Telefone não informado"}</p>
+              <p style={{ color: preview.secondaryFontColor }}>{preview.endereco || "Endereço não informado"}</p>
             </div>
           </article>
         )}
