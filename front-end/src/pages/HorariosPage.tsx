@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthState, Horario, Product, User } from "../types";
 import { createHorario, getHorarios, getProducts, getUsers, remarcarHorario } from "../api";
-import { isLojaRole } from "../roles";
+import { isFuncionarioRole, isLojaOwnerRole, isLojaRole } from "../roles";
 
 interface HorariosPageProps {
   auth: AuthState;
@@ -19,6 +19,8 @@ export function HorariosPage({ auth }: HorariosPageProps) {
   const [scheduleProductId, setScheduleProductId] = useState<number>(0);
   const [scheduleDateTime, setScheduleDateTime] = useState("");
   const [rescheduleValues, setRescheduleValues] = useState<Record<number, string>>({});
+  const isLojaOwner = isLojaOwnerRole(auth.role);
+  const isFuncionario = isFuncionarioRole(auth.role);
 
   const toDateTimeLocalValue = (isoDateTime: string) => {
     const date = new Date(isoDateTime);
@@ -55,7 +57,9 @@ export function HorariosPage({ auth }: HorariosPageProps) {
       setUsers(u);
       setHorarios(h);
       if (p.length) setScheduleProductId(p[0].id);
-      if (usersFromStore.length > 0) {
+      if (isFuncionario) {
+        setScheduleUserId(auth.userId);
+      } else if (usersFromStore.length > 0) {
         setScheduleUserId(usersFromStore[0].id);
       } else if (u.length) {
         setScheduleUserId(u[0].id);
@@ -85,7 +89,7 @@ export function HorariosPage({ auth }: HorariosPageProps) {
       const iso = new Date(scheduleDateTime).toISOString();
       await createHorario(
         {
-          usuarioId: scheduleUserId,
+          usuarioId: isLojaOwner ? scheduleUserId : auth.userId,
           produtoId: scheduleProductId,
           dataHora: iso,
         },
@@ -120,7 +124,11 @@ export function HorariosPage({ auth }: HorariosPageProps) {
       <section className="seller-hero">
         <div>
           <h1>Horários</h1>
-          <p>Crie e acompanhe os agendamentos em uma tela dedicada.</p>
+          <p>
+            {isLojaOwner
+              ? "Crie e acompanhe os agendamentos da sua equipe em uma tela dedicada."
+              : "Acompanhe e organize somente os seus próprios agendamentos."}
+          </p>
         </div>
         <div className="seller-stats">
           <article className="stat-card">
@@ -153,16 +161,25 @@ export function HorariosPage({ auth }: HorariosPageProps) {
           <form className="form form-grid" onSubmit={handleAddHorario}>
             <label>
               Funcionário
-              <select
-                value={scheduleUserId}
-                onChange={(e) => setScheduleUserId(Number(e.target.value))}
-              >
-                {(funcionarios.length ? funcionarios : users).map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.nome} ({user.email})
-                  </option>
-                ))}
-              </select>
+              {isLojaOwner ? (
+                <select
+                  value={scheduleUserId}
+                  onChange={(e) => setScheduleUserId(Number(e.target.value))}
+                >
+                  {(funcionarios.length ? funcionarios : users).map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.nome} ({user.email})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={auth.nome}
+                  readOnly
+                  title="Funcionário fixado no usuário logado"
+                />
+              )}
             </label>
             <label>
               Produto
@@ -186,7 +203,7 @@ export function HorariosPage({ auth }: HorariosPageProps) {
                 required
               />
             </label>
-            <button type="submit" disabled={!users.length || !products.length}>
+            <button type="submit" disabled={!products.length || (isLojaOwner && !users.length)}>
               Criar agendamento
             </button>
           </form>

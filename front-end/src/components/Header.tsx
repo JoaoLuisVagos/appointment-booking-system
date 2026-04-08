@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { AuthState } from "../types";
 import { saveAuth } from "../auth";
-import { isLojaRole } from "../roles";
+import { isLojaOwnerRole, isLojaRole } from "../roles";
 
 interface HeaderProps {
   auth: AuthState | null;
@@ -39,7 +39,7 @@ export function Header({ auth, onLogout }: HeaderProps) {
                 <Link to="/loja/dashboard">Painel</Link>
                 <Link to="/loja/cadastros">Cadastros</Link>
                 <Link to="/loja/horarios">Horários</Link>
-                <Link to="/loja/funcionarios">Funcionários</Link>
+                {isLojaOwnerRole(auth.role) && <Link to="/loja/funcionarios">Funcionários</Link>}
               </>
             ) : (
               <>

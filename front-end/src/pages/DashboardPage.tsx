@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthState, Horario, Product } from "../types";
 import { getHorarios, getProducts } from "../api";
+import { isFuncionarioRole, isLojaOwnerRole } from "../roles";
 
 interface DashboardPageProps {
   auth: AuthState;
@@ -33,8 +34,14 @@ export function DashboardPage({ auth }: DashboardPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const totalSchedules = horarios.length;
-  const todaySchedules = horarios.filter((h) => {
+  const isFuncionario = isFuncionarioRole(auth.role);
+  const isLojaOwner = isLojaOwnerRole(auth.role);
+  const scopedHorarios = isFuncionario
+    ? horarios.filter((h) => h.usuarioId === auth.userId)
+    : horarios;
+
+  const totalSchedules = scopedHorarios.length;
+  const todaySchedules = scopedHorarios.filter((h) => {
     const date = new Date(h.dataHora);
     const now = new Date();
     return (
@@ -44,7 +51,7 @@ export function DashboardPage({ auth }: DashboardPageProps) {
     );
   }).length;
 
-  const nextSchedule = horarios
+  const nextSchedule = scopedHorarios
     .map((h) => new Date(h.dataHora))
     .filter((date) => date.getTime() > Date.now())
     .sort((a, b) => a.getTime() - b.getTime())[0];
@@ -53,8 +60,12 @@ export function DashboardPage({ auth }: DashboardPageProps) {
     <main className="page seller-page">
       <section className="seller-hero">
         <div>
-          <h1>Painel da Loja</h1>
-          <p>Visão geral dos seus serviços, horários e acessos rápidos para operação.</p>
+          <h1>{isFuncionario ? "Meu Painel" : "Painel da Loja"}</h1>
+          <p>
+            {isFuncionario
+              ? "Acompanhe somente seus horários e seus próximos atendimentos."
+              : "Visão geral dos seus serviços, horários e acessos rápidos para operação."}
+          </p>
         </div>
         <div className="seller-stats">
           <article className="stat-card">
@@ -83,17 +94,21 @@ export function DashboardPage({ auth }: DashboardPageProps) {
           </div>
 
           <div className="dashboard-links">
-            <Link className="dashboard-link-card" to="/loja/cadastros">
-              <span>Produtos e cadastro</span>
-              <strong>Gerenciar serviços</strong>
-            </Link>
-            <Link className="dashboard-link-card" to="/loja/funcionarios">
-              <span>Equipe da loja</span>
-              <strong>Cadastrar funcionários</strong>
-            </Link>
+            {!isFuncionario && (
+              <Link className="dashboard-link-card" to="/loja/cadastros">
+                <span>Produtos e cadastro</span>
+                <strong>Gerenciar serviços</strong>
+              </Link>
+            )}
+            {isLojaOwner && (
+              <Link className="dashboard-link-card" to="/loja/funcionarios">
+                <span>Equipe da loja</span>
+                <strong>Cadastrar funcionários</strong>
+              </Link>
+            )}
             <Link className="dashboard-link-card" to="/loja/horarios">
-              <span>Horários cadastrados</span>
-              <strong>Ver agenda</strong>
+              <span>{isFuncionario ? "Meus horários" : "Horários cadastrados"}</span>
+              <strong>{isFuncionario ? "Ver meus atendimentos" : "Ver agenda"}</strong>
             </Link>
             <div className="dashboard-link-card dashboard-link-card--static">
               <span>Próximo horário</span>

@@ -76,6 +76,12 @@ public class UsersController : ControllerBase
 
         if (User.Identity?.IsAuthenticated == true)
         {
+            var requesterRole = GetCurrentUserRole();
+            if (!IsLojaOwnerRole(requesterRole))
+            {
+                return Forbid();
+            }
+
             var lojaId = GetScopeLojaId();
             if (lojaId == null)
             {
@@ -110,6 +116,11 @@ public class UsersController : ControllerBase
             return BadRequest("Nome e Email são obrigatórios.");
         }
 
+        if (!IsLojaOwnerRole(GetCurrentUserRole()))
+        {
+            return Forbid();
+        }
+
         var lojaId = GetScopeLojaId();
         if (lojaId == null)
         {
@@ -131,6 +142,11 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteUser(int id)
     {
+        if (!IsLojaOwnerRole(GetCurrentUserRole()))
+        {
+            return Forbid();
+        }
+
         var lojaId = GetScopeLojaId();
         if (lojaId == null)
         {
@@ -175,6 +191,16 @@ public class UsersController : ControllerBase
             ?? User.FindFirstValue("sub");
 
         return int.TryParse(idClaim, out var userId) ? userId : null;
+    }
+
+    private string GetCurrentUserRole()
+    {
+        return (User.FindFirstValue(ClaimTypes.Role) ?? string.Empty).Trim().ToLowerInvariant();
+    }
+
+    private static bool IsLojaOwnerRole(string role)
+    {
+        return role == "loja";
     }
 
     private int? GetScopeLojaId()

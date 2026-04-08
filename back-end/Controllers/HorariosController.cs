@@ -28,9 +28,19 @@ public class HorariosController : ControllerBase
             return Ok(Array.Empty<object>());
         }
 
-        var horarios = _context.Horarios
+        var role = GetCurrentUserRole();
+        var currentUserId = GetCurrentUserId();
+
+        var horariosQuery = _context.Horarios
             .AsNoTracking()
-            .Where(h => h.LojaId == lojaId.Value)
+            .Where(h => h.LojaId == lojaId.Value);
+
+        if (IsEmployeeRole(role) && currentUserId != null)
+        {
+            horariosQuery = horariosQuery.Where(h => h.UsuarioId == currentUserId.Value);
+        }
+
+        var horarios = horariosQuery
             .Select(h => new
             {
                 h.Id,
@@ -69,6 +79,9 @@ public class HorariosController : ControllerBase
             return NotFound("Horário não encontrado.");
         }
 
+        var role = GetCurrentUserRole();
+        var currentUserId = GetCurrentUserId();
+
         var horario = _context.Horarios
             .AsNoTracking()
             .Where(h => h.Id == id && h.LojaId == lojaId.Value)
@@ -102,6 +115,12 @@ public class HorariosController : ControllerBase
         {
             return NotFound("Horário não encontrado.");
         }
+
+        if (IsEmployeeRole(role) && (currentUserId == null || horario.UsuarioId != currentUserId.Value))
+        {
+            return NotFound("Horário não encontrado.");
+        }
+
         return Ok(horario);
     }
 
@@ -121,7 +140,17 @@ public class HorariosController : ControllerBase
 
         var role = GetCurrentUserRole();
         var currentUserId = GetCurrentUserId();
-        if (!IsStoreRole(role) && (currentUserId == null || horario.UsuarioId != currentUserId.Value))
+
+        if (IsEmployeeRole(role))
+        {
+            if (currentUserId == null)
+            {
+                return Forbid();
+            }
+
+            horario.UsuarioId = currentUserId.Value;
+        }
+        else if (!IsStoreRole(role) && (currentUserId == null || horario.UsuarioId != currentUserId.Value))
         {
             return Forbid();
         }
@@ -197,6 +226,8 @@ public class HorariosController : ControllerBase
             return Forbid();
         }
 
+        var currentUserId = GetCurrentUserId();
+
         var lojaId = GetScopeLojaId();
         if (lojaId == null)
         {
@@ -207,6 +238,16 @@ public class HorariosController : ControllerBase
         if (existingHorario == null)
         {
             return NotFound("Horário não encontrado.");
+        }
+
+        if (IsEmployeeRole(role))
+        {
+            if (currentUserId == null || existingHorario.UsuarioId != currentUserId.Value)
+            {
+                return Forbid();
+            }
+
+            horario.UsuarioId = currentUserId.Value;
         }
 
         if (!_context.Users.Any(u => u.Id == horario.UsuarioId && (u.LojaId == lojaId.Value || u.Id == lojaId.Value)))
@@ -244,7 +285,11 @@ public class HorariosController : ControllerBase
             return NotFound("Horário não encontrado.");
         }
 
-        if (!IsStoreRole(role) && (currentUserId == null || horario.UsuarioId != currentUserId.Value))
+        if (IsLojaOwnerRole(role))
+        {
+            // Loja pode remover qualquer horário da própria loja.
+        }
+        else if (currentUserId == null || horario.UsuarioId != currentUserId.Value)
         {
             return Forbid();
         }
@@ -277,7 +322,11 @@ public class HorariosController : ControllerBase
         var role = GetCurrentUserRole();
         var userId = GetCurrentUserId();
 
-        if (!IsStoreRole(role) && (userId == null || horario.UsuarioId != userId.Value))
+        if (IsLojaOwnerRole(role))
+        {
+            // Loja pode remarcar qualquer horário da própria loja.
+        }
+        else if (userId == null || horario.UsuarioId != userId.Value)
         {
             return Forbid();
         }
@@ -333,6 +382,16 @@ public class HorariosController : ControllerBase
     private static bool IsStoreRole(string role)
     {
         return role == "loja" || role == "funcionario" || role == "vendedor";
+    }
+
+    private static bool IsLojaOwnerRole(string role)
+    {
+        return role == "loja";
+    }
+
+    private static bool IsEmployeeRole(string role)
+    {
+        return role == "funcionario" || role == "vendedor";
     }
 
     private int? GetScopeLojaId()
