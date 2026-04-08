@@ -1,73 +1,73 @@
 # Appointment Booking System
 
-Projeto full stack de agendamento online, pensado para um fluxo simples:
-cliente agenda, vendedor organiza serviços e horarios, sistema centraliza tudo.
+Sistema full stack de agendamento para pequenos negócios, com foco em operação diária de loja e atendimento ao cliente.
 
-Este repositorio foi construido para demonstrar capacidade de entrega ponta a ponta:
-- API com autenticação e regras de negocio
-- Front-end com fluxo real de uso
-- Banco relacional com modelagem basica
-- Ambiente reproduzivel com Docker
+Este projeto foi construido para demonstrar entrega ponta a ponta: API, front-end, banco relacional e ambiente reproduzivel com Docker.
 
-## Sobre o projeto
+## Objetivo
 
-A ideia deste sistema e resolver um problema comum em pequenos negocios:
-controle de agenda e serviços sem depender de processos manuais.
+Resolver um problema comum de operação: organizar serviços, equipe e agenda em um fluxo único, evitando controle manual disperso.
 
-O produto tem dois perfis:
-- Cliente: escolhe serviço e cria agendamento
-- Vendedor: cadastra produtos/serviços e gerencia horarios
-s
-## Minha jornada de aprendizado
+## Perfis e regras de acesso
 
-Estou em processo de aprendizado de .NET, e este projeto foi construído ao longo de semanas de estudo para colocar o conteúdo em prática de forma real.
+- Cliente:
+	agenda serviços e gerencia seus proprios horarios.
+- Loja:
+	cadastra produtos, funcionários e gerencia a agenda da equipe.
+- Funcionario:
+	visualiza apenas seus proprios horarios e não pode cadastrar outros funcionários.
 
-Mais do que um código final, este repositório representa minha evolução técnica: cada ajuste, refatoração e melhoria foi parte do meu desenvolvimento como dev.
+## Funcionalidades implementadas
 
-## O que este projeto demonstra
+- Autenticação com JWT (registro e login).
+- Isolamento de dados por loja (produtos, usuarios e horarios).
+- Cadastro e gestão de produtos por loja.
+- Gestão de funcionários pela loja (criar, editar e excluir).
+- Agendamento e remarcacao de horarios.
+- Regras de permissão por papel aplicadas no back-end.
+- Tratamento de erros com mensagens amigaveis no front-end.
 
-- Capacidade de construir uma aplicao completa (front + back + banco)
-- Estruturacao de API REST com autenticação JWT
-- Integracao entre React e ASP.NET
-- Uso de Docker Compose para facilitar execucao local
-- Evolução continua: melhorias de UX, mensagens de erro e robustez
+## Decisoes tecnicas relevantes
+
+- Multi-tenant por loja:
+	adicionada associacao de loja nas entidades principais e filtros de escopo no back-end.
+- Autorizacao no servidor:
+	regras de permissão são validadas na API, não apenas na interface.
+- Evolucao incremental:
+	o histórico de commits mostra ajustes de regra de negocio conforme feedback de uso.
 
 ## Stack tecnica
 
 ### Back-end
 - .NET 8
-- ASP.NET
+- ASP.NET Core Web API
+- Entity Framework Core + MySQL
 - JWT Bearer Authentication
 - BCrypt (hash de senha)
-- MySQL
 
 ### Front-end
-- React + TypeScript
+- React
+- TypeScript
+- Vite
 
 ### Infra
 - Docker
 - Docker Compose
 
-## Funcionalidades atuais
-
-- Registro e login de usuarios
-- Controle de perfil por role (cliente/vendedor)
-- Cadastro de produtos
-- Criacao e consulta de agendamentos
-- Retorno de dados de relacionamento (usuario e produto) nos horarios
-- Tratamento de erros com mensagens amigaveis no front-end
-
 ## Arquitetura (visao rapida)
 
-- front-end: interface e consumo da API
-- back-end: autenticação, regras de negocio e persistencia
-- database: schema SQL inicial
+- front-end:
+	interface web e consumo da API.
+- back-end:
+	autenticação, autorizacao, regras de negocio e persistencia.
+- database:
+	schema relacional para usuarios, produtos e horarios.
 
 Fluxo principal:
-1. Usuario autentica
-2. Front envia token JWT
-3. API valida token e executa regras
-4. Dados persistem no banco
+1. Usuario autentica.
+2. Front-end envia JWT nas requisições protegidas.
+3. API valida token, papel e escopo da loja.
+4. Dados sao persistidos e retornados conforme permissoes.
 
 ## Como executar
 
@@ -77,9 +77,7 @@ Requisitos:
 - Docker
 - Docker Compose
 
-Passos:
-1. Na raiz do projeto, ajuste o arquivo .env se necessario
-2. Execute:
+Comando:
 
 ```bash
 docker compose up --build -d
@@ -91,9 +89,10 @@ Acessos:
 - Swagger: http://localhost:5000/swagger
 - Banco (host): localhost:3307
 
-### Opcao 2: Execucao local sem Docker
+### Opcao 2: Execucao local
 
 Back-end:
+
 ```bash
 cd back-end
 dotnet restore
@@ -101,30 +100,27 @@ dotnet run
 ```
 
 Front-end:
+
 ```bash
 cd front-end
 npm install
 npm run dev
 ```
 
-## Diferenciais de engenharia
+## Qualidade e proximos passos
 
-- Ambiente de desenvolvimento padronizado com compose
-- Separacao de responsabilidades por camadas/pastas
-- Ajustes de payload para melhorar consumo no front-end
-- Mensagens de erro orientadas ao usuario final
+Melhorias planejadas para maturidade de produção:
 
-## Melhorias planejadas
+- Cobertura de testes automatizados (unitarios e integracao).
+- Camada de serviços para reduzir regra de negocio em controllers.
+- Migracoes versionadas de banco com EF Core.
+- Pipeline CI para build, testes e validacao automatica.
+- Observabilidade (logs estruturados e metricas).
 
-- Camada de serviços para reduzir logica em controllers
-- Testes automatizados (unitarios e integracao)
-- Migracoes versionadas de banco com EF
-- Pipeline CI para build e validacao automatica
-- Observabilidade (logs estruturados e metricas)
+## Sobre este repositorio
+
+Este projeto representa minha evolução como dev, com foco em aprender construindo produto real: implementar, validar com feedback e refinar regras de negocio.
 
 ## Autor
 
-João Luis Vagos
-
-Se você é recrutador(a), obrigado por avaliar este projeto.
-Ele representa não apenas o estado atual do codigo, mas tambem minha forma de evoluir produto com feedback rapido, foco em clareza e melhoria continua.
+Joao Luis Vagos
