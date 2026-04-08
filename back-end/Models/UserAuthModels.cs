@@ -20,3 +20,22 @@ public record AuthResponse(
 
 public record RemarcarHorarioRequest(
     DateTime DataHora);
+
+public record ClientePerfilResponse(
+    int Id,
+    string Nome,
+    string Email,
+    string Telefone,
+    string Endereco,
+    string Cidade,
+    string Estado,
+    string Cep,
+    string Complemento);
+
+public record UpdateClientePerfilRequest(
+    string Telefone,
+    string Endereco,
+    string Cidade,
+    string Estado,
+    string Cep,
+    string Complemento);

@@ -31,4 +31,10 @@ export interface User {
   nome: string;
   email: string;
   role: UserRole;
+  telefone?: string;
+  endereco?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  complemento?: string;
 }

@@ -47,11 +47,12 @@ export function Header({ auth, onLogout, storeSettings }: HeaderProps) {
                 <Link to="/loja/cadastros">Cadastros</Link>
                 <Link to="/loja/horarios">Horários</Link>
                 {isLojaOwnerRole(auth.role) && <Link to="/loja/funcionarios">Funcionários</Link>}
-                {isLojaOwnerRole(auth.role) && <Link to="/loja/configuracoes">Configurações</Link>}
+                <Link to="/configuracoes">Configurações</Link>
               </>
             ) : (
               <>
                 <Link to="/cliente">Agendar</Link>
+                <Link to="/configuracoes">Configurações</Link>
               </>
             )}
             <button type="button" className="header__logout" onClick={handleLogout}>

@@ -156,3 +156,35 @@ export async function updateMinhaLojaSettings(
   const updated = await handleResponse<LojaSettingsResponse>(res);
   return toStoreSettings(updated);
 }
+
+export type ClientePerfil = {
+  id: number;
+  nome: string;
+  email: string;
+  telefone: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  complemento: string;
+};
+
+export async function getMeuPerfilCliente(auth?: AuthState): Promise<ClientePerfil> {
+  const res = await safeFetch(`${API_BASE}/users/meu-perfil`, {
+    method: "GET",
+    headers: buildAuthHeaders(auth),
+  });
+  return handleResponse<ClientePerfil>(res);
+}
+
+export async function updateMeuPerfilCliente(
+  data: Omit<ClientePerfil, "id" | "nome" | "email">,
+  auth?: AuthState
+): Promise<ClientePerfil> {
+  const res = await safeFetch(`${API_BASE}/users/meu-perfil`, {
+    method: "PUT",
+    headers: buildAuthHeaders(auth),
+    body: JSON.stringify(data),
+  });
+  return handleResponse<ClientePerfil>(res);
+}

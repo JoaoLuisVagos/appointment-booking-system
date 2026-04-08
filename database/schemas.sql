@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS usuarios (
     senha_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'cliente',
     loja_id INT NULL,
+    telefone VARCHAR(30) NULL,
+    endereco VARCHAR(200) NULL,
+    cidade VARCHAR(80) NULL,
+    estado VARCHAR(40) NULL,
+    cep VARCHAR(20) NULL,
+    complemento VARCHAR(120) NULL,
     FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );
 

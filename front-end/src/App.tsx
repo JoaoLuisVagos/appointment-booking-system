@@ -36,7 +36,7 @@ function App() {
     let active = true;
 
     const loadSettings = async () => {
-      if (!auth || !isLojaRole(auth.role)) {
+      if (!auth || !auth.lojaId) {
         if (active) {
           setStoreSettings(DEFAULT_STORE_SETTINGS);
         }
@@ -158,9 +158,9 @@ function App() {
             }
           />
           <Route
-            path="/loja/configuracoes"
+            path="/configuracoes"
             element={
-              <ProtectedRoute auth={auth} allowedRoles={['loja']}>
+              <ProtectedRoute auth={auth} allowedRoles={['loja', 'funcionario', 'vendedor', 'cliente']}>
                 {auth && (
                   <ConfiguracoesPage
                     auth={auth}

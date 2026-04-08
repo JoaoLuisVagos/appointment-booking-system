@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthState } from "../types";
-import { updateMinhaLojaSettings } from "../api";
+import { getMeuPerfilCliente, updateMinhaLojaSettings, updateMeuPerfilCliente } from "../api";
 import {
   DEFAULT_STORE_SETTINGS,
   StoreSettings,
   normalizeHexColor,
 } from "../storeSettings";
+import { isLojaOwnerRole } from "../roles";
 
 interface ConfiguracoesPageProps {
   auth: AuthState;
@@ -15,11 +16,19 @@ interface ConfiguracoesPageProps {
 }
 
 export function ConfiguracoesPage({ auth, settings, onSettingsChange }: ConfiguracoesPageProps) {
+  const isLoja = isLojaOwnerRole(auth.role);
+
   const [nomeLoja, setNomeLoja] = useState(settings.nomeLoja);
   const [telefone, setTelefone] = useState(settings.telefone);
   const [endereco, setEndereco] = useState(settings.endereco);
   const [primaryColor, setPrimaryColor] = useState(settings.primaryColor);
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl);
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
+  const [cep, setCep] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [loadingPerfil, setLoadingPerfil] = useState(false);
+  const [savingPerfil, setSavingPerfil] = useState(false);
 
   useEffect(() => {
     setNomeLoja(settings.nomeLoja);
@@ -28,6 +37,44 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
     setPrimaryColor(settings.primaryColor);
     setLogoUrl(settings.logoUrl);
   }, [settings]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadPerfil = async () => {
+      if (isLoja) {
+        return;
+      }
+
+      setLoadingPerfil(true);
+      try {
+        const perfil = await getMeuPerfilCliente(auth);
+        if (!active) {
+          return;
+        }
+
+        setTelefone(perfil.telefone || "");
+        setEndereco(perfil.endereco || "");
+        setCidade(perfil.cidade || "");
+        setEstado(perfil.estado || "");
+        setCep(perfil.cep || "");
+        setComplemento(perfil.complemento || "");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Erro ao carregar configurações de perfil";
+        toast.error(message);
+      } finally {
+        if (active) {
+          setLoadingPerfil(false);
+        }
+      }
+    };
+
+    loadPerfil();
+
+    return () => {
+      active = false;
+    };
+  }, [auth, isLoja]);
 
   const preview = useMemo<StoreSettings>(
     () => ({
@@ -43,17 +90,45 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (isLoja) {
+      try {
+        const saved = await updateMinhaLojaSettings(preview, auth);
+        onSettingsChange(saved);
+        toast.success("Configurações da loja salvas com sucesso.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Erro ao salvar configurações da loja";
+        toast.error(message);
+      }
+      return;
+    }
+
+    setSavingPerfil(true);
     try {
-      const saved = await updateMinhaLojaSettings(preview, auth);
-      onSettingsChange(saved);
-      toast.success("Configurações da loja salvas com sucesso.");
+      await updateMeuPerfilCliente(
+        {
+          telefone,
+          endereco,
+          cidade,
+          estado,
+          cep,
+          complemento,
+        },
+        auth
+      );
+      toast.success("Dados do perfil salvos com sucesso.");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao salvar configurações da loja";
+      const message = err instanceof Error ? err.message : "Erro ao salvar dados do perfil";
       toast.error(message);
+    } finally {
+      setSavingPerfil(false);
     }
   };
 
   const handleReset = async () => {
+    if (!isLoja) {
+      return;
+    }
+
     try {
       const saved = await updateMinhaLojaSettings(DEFAULT_STORE_SETTINGS, auth);
 
@@ -73,98 +148,169 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
 
   return (
     <main className="page seller-page">
-      <section className="seller-hero">
+      <section className={isLoja ? "seller-hero" : "client-hero"}>
         <div>
-          <h1>Configurações da Loja</h1>
-          <p>Personalize dados da loja, cor principal e logo exibidos no sistema.</p>
+          <h1>Configurações</h1>
+          <p>
+            {isLoja
+              ? "Personalize dados da loja, cor principal e logo exibidos no sistema."
+              : "Atualize seus dados importantes de contato e endereço."}
+          </p>
         </div>
       </section>
+
+      {loadingPerfil && !isLoja && <div className="loading-chip">Carregando dados do perfil...</div>}
 
       <section className="dashboard-grid settings-grid">
         <article className="card stack-card">
           <div className="section-header">
-            <h2>Preferências visuais e dados</h2>
-            <p>Se nada for configurado, o sistema mantém automaticamente o padrão.</p>
+            <h2>{isLoja ? "Preferências visuais e dados" : "Dados pessoais"}</h2>
+            <p>
+              {isLoja
+                ? "Se nada for configurado, o sistema mantém automaticamente o padrão."
+                : "Esses campos aparecem apenas na tela de configurações."}
+            </p>
           </div>
 
           <form className="form" onSubmit={handleSave}>
-            <label>
-              Nome da loja
-              <input
-                value={nomeLoja}
-                onChange={(e) => setNomeLoja(e.target.value)}
-                placeholder="Ex.: Barbearia Centro"
-              />
-            </label>
-            <label>
-              Telefone
-              <input
-                value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-                placeholder="(00) 00000-0000"
-              />
-            </label>
-            <label>
-              Endereço
-              <input
-                value={endereco}
-                onChange={(e) => setEndereco(e.target.value)}
-                placeholder="Rua, número, bairro"
-              />
-            </label>
-            <label>
-              Cor principal
-              <div className="color-field">
-                <input
-                  type="color"
-                  value={normalizeHexColor(primaryColor)}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  aria-label="Selecionar cor principal"
-                />
-                <input
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  placeholder="#0e7490"
-                />
-              </div>
-            </label>
-            <label>
-              URL da logo
-              <input
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://.../logo.png"
-              />
-            </label>
+            {isLoja ? (
+              <>
+                <label>
+                  Nome da loja
+                  <input
+                    value={nomeLoja}
+                    onChange={(e) => setNomeLoja(e.target.value)}
+                    placeholder="Ex.: Barbearia Centro"
+                  />
+                </label>
+                <label>
+                  Telefone
+                  <input
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                  />
+                </label>
+                <label>
+                  Endereço
+                  <input
+                    value={endereco}
+                    onChange={(e) => setEndereco(e.target.value)}
+                    placeholder="Rua, número, bairro"
+                  />
+                </label>
+                <label>
+                  Cor principal
+                  <div className="color-field">
+                    <input
+                      type="color"
+                      value={normalizeHexColor(primaryColor)}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      aria-label="Selecionar cor principal"
+                    />
+                    <input
+                      value={primaryColor}
+                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      placeholder="#0e7490"
+                    />
+                  </div>
+                </label>
+                <label>
+                  URL da logo
+                  <input
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://.../logo.png"
+                  />
+                </label>
 
-            <div className="settings-actions">
-              <button type="submit">Salvar configurações</button>
-              <button type="button" className="action-secondary" onClick={handleReset}>
-                Restaurar padrão
-              </button>
-            </div>
+                <div className="settings-actions">
+                  <button type="submit">Salvar configurações</button>
+                  <button type="button" className="action-secondary" onClick={handleReset}>
+                    Restaurar padrão
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <label>
+                  Telefone
+                  <input
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                  />
+                </label>
+                <label>
+                  Endereço
+                  <input
+                    value={endereco}
+                    onChange={(e) => setEndereco(e.target.value)}
+                    placeholder="Rua, número, bairro"
+                  />
+                </label>
+                <label>
+                  Cidade
+                  <input
+                    value={cidade}
+                    onChange={(e) => setCidade(e.target.value)}
+                    placeholder="Ex.: São Paulo"
+                  />
+                </label>
+                <label>
+                  Estado
+                  <input
+                    value={estado}
+                    onChange={(e) => setEstado(e.target.value)}
+                    placeholder="Ex.: SP"
+                  />
+                </label>
+                <label>
+                  CEP
+                  <input
+                    value={cep}
+                    onChange={(e) => setCep(e.target.value)}
+                    placeholder="00000-000"
+                  />
+                </label>
+                <label>
+                  Complemento
+                  <input
+                    value={complemento}
+                    onChange={(e) => setComplemento(e.target.value)}
+                    placeholder="Apartamento, referência, etc"
+                  />
+                </label>
+
+                <button type="submit" disabled={savingPerfil}>
+                  {savingPerfil ? "Salvando..." : "Salvar dados"}
+                </button>
+              </>
+            )}
           </form>
         </article>
 
-        <article className="card stack-card">
-          <div className="section-header">
-            <h2>Pré-visualização</h2>
-            <p>Como o cabeçalho da loja aparecerá para a equipe.</p>
-          </div>
-
-          <div className="settings-preview" style={{ borderColor: preview.primaryColor }}>
-            <div className="settings-preview__brand" style={{ color: preview.primaryColor }}>
-              {preview.logoUrl ? (
-                <img src={preview.logoUrl} alt="Logo da loja" />
-              ) : (
-                <div className="settings-preview__logo-placeholder">Sem logo</div>
-              )}
-              <strong>{preview.nomeLoja}</strong>
+        {isLoja && (
+          <article className="card stack-card">
+            <div className="section-header">
+              <h2>Pré-visualização</h2>
+              <p>Como o cabeçalho da loja aparecerá para a equipe.</p>
             </div>
-            <p>{preview.telefone || "Telefone não informado"}</p>
-            <p>{preview.endereco || "Endereço não informado"}</p>
-          </div>
-        </article>
+
+            <div className="settings-preview" style={{ borderColor: preview.primaryColor }}>
+              <div className="settings-preview__brand" style={{ color: preview.primaryColor }}>
+                {preview.logoUrl ? (
+                  <img src={preview.logoUrl} alt="Logo da loja" />
+                ) : (
+                  <div className="settings-preview__logo-placeholder">Sem logo</div>
+                )}
+                <strong>{preview.nomeLoja}</strong>
+              </div>
+              <p>{preview.telefone || "Telefone não informado"}</p>
+              <p>{preview.endereco || "Endereço não informado"}</p>
+            </div>
+          </article>
+        )}
       </section>
     </main>
   );

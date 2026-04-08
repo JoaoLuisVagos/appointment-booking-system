@@ -25,5 +25,23 @@ public class User
     [Column("loja_id")]
     public int? LojaId { get; set; }
 
+    [Column("telefone")]
+    public string? Telefone { get; set; }
+
+    [Column("endereco")]
+    public string? Endereco { get; set; }
+
+    [Column("cidade")]
+    public string? Cidade { get; set; }
+
+    [Column("estado")]
+    public string? Estado { get; set; }
+
+    [Column("cep")]
+    public string? Cep { get; set; }
+
+    [Column("complemento")]
+    public string? Complemento { get; set; }
+
     public ICollection<Horarios> Horarios { get; set; } = new List<Horarios>();
 }

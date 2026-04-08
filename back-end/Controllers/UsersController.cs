@@ -164,6 +164,86 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("meu-perfil")]
+    public IActionResult GetMeuPerfil()
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var user = _context.Users.SingleOrDefault(u => u.Id == userId.Value);
+        if (user == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var role = NormalizeRole(user.Role);
+        if (role == "loja")
+        {
+            return Forbid();
+        }
+
+        return Ok(new ClientePerfilResponse(
+            user.Id,
+            user.Nome,
+            user.Email,
+            user.Telefone ?? string.Empty,
+            user.Endereco ?? string.Empty,
+            user.Cidade ?? string.Empty,
+            user.Estado ?? string.Empty,
+            user.Cep ?? string.Empty,
+            user.Complemento ?? string.Empty));
+    }
+
+    [HttpPut("meu-perfil")]
+    public IActionResult UpdateMeuPerfil([FromBody] UpdateClientePerfilRequest request)
+    {
+        if (request == null)
+        {
+            return BadRequest("Dados de perfil inválidos.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var user = _context.Users.SingleOrDefault(u => u.Id == userId.Value);
+        if (user == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var role = NormalizeRole(user.Role);
+        if (role == "loja")
+        {
+            return Forbid();
+        }
+
+        user.Telefone = NormalizeOptional(request.Telefone, 30);
+        user.Endereco = NormalizeOptional(request.Endereco, 200);
+        user.Cidade = NormalizeOptional(request.Cidade, 80);
+        user.Estado = NormalizeOptional(request.Estado, 40);
+        user.Cep = NormalizeOptional(request.Cep, 20);
+        user.Complemento = NormalizeOptional(request.Complemento, 120);
+
+        _context.SaveChanges();
+
+        return Ok(new ClientePerfilResponse(
+            user.Id,
+            user.Nome,
+            user.Email,
+            user.Telefone ?? string.Empty,
+            user.Endereco ?? string.Empty,
+            user.Cidade ?? string.Empty,
+            user.Estado ?? string.Empty,
+            user.Cep ?? string.Empty,
+            user.Complemento ?? string.Empty));
+    }
+
     private static string NormalizeRole(string? role)
     {
         if (string.IsNullOrWhiteSpace(role))
@@ -201,6 +281,17 @@ public class UsersController : ControllerBase
     private static bool IsLojaOwnerRole(string role)
     {
         return role == "loja";
+    }
+
+    private static string? NormalizeOptional(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length > maxLength ? normalized[..maxLength] : normalized;
     }
 
     private int? GetScopeLojaId()

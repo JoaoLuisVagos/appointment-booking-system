@@ -111,6 +111,12 @@ using (var scope = app.Services.CreateScope())
         )");
 
     db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefone VARCHAR(30) NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS endereco VARCHAR(200) NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade VARCHAR(80) NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS estado VARCHAR(40) NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cep VARCHAR(20) NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS complemento VARCHAR(120) NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS loja_id INT NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE horarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
 
