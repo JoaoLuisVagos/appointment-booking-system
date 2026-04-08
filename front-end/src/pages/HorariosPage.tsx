@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState, Horario, Product, User } from "../types";
 import { createHorario, getHorarios, getProducts, getUsers, remarcarHorario } from "../api";
 import { isFuncionarioRole, isLojaOwnerRole, isLojaRole } from "../roles";
@@ -65,7 +66,9 @@ export function HorariosPage({ auth }: HorariosPageProps) {
         setScheduleUserId(u[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      const message = err instanceof Error ? err.message : "Erro ao carregar dados";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -96,9 +99,12 @@ export function HorariosPage({ auth }: HorariosPageProps) {
         auth
       );
       setScheduleDateTime("");
+      toast.success("Agendamento criado com sucesso.");
       await loadAll();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar horário");
+      const message = err instanceof Error ? err.message : "Erro ao criar horário";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -113,9 +119,12 @@ export function HorariosPage({ auth }: HorariosPageProps) {
 
     try {
       await remarcarHorario(horario.id, new Date(selectedDateTime).toISOString(), auth);
+      toast.success("Horário remarcado com sucesso.");
       await loadAll();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao remarcar horário");
+      const message = err instanceof Error ? err.message : "Erro ao remarcar horário";
+      setError(message);
+      toast.error(message);
     }
   };
 

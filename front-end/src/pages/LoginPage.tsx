@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState } from "../types";
 import { login } from "../auth";
 import { isLojaRole } from "../roles";
@@ -23,13 +24,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const auth = await login(email.trim(), senha);
       onLogin(auth);
+      toast.success("Login realizado com sucesso.");
       if (isLojaRole(auth.role)) {
         navigate("/loja");
       } else {
         navigate("/cliente");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer login");
+      const message = err instanceof Error ? err.message : "Erro ao fazer login";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

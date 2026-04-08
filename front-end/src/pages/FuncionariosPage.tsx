@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState, User } from "../types";
 import { createUser, deleteUser, getUsers, updateUser } from "../api";
 
@@ -27,7 +28,9 @@ export function FuncionariosPage({ auth }: FuncionariosPageProps) {
       const list = await getUsers(auth);
       setUsers(list);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar funcionários");
+      const message = err instanceof Error ? err.message : "Erro ao carregar funcionários";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -56,9 +59,12 @@ export function FuncionariosPage({ auth }: FuncionariosPageProps) {
       setNome("");
       setEmail("");
       setSenha("");
+      toast.success("Funcionário cadastrado com sucesso.");
       await loadUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao cadastrar funcionário");
+      const message = err instanceof Error ? err.message : "Erro ao cadastrar funcionário";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -87,9 +93,12 @@ export function FuncionariosPage({ auth }: FuncionariosPageProps) {
         auth
       );
       cancelEdit();
+      toast.success("Funcionário atualizado com sucesso.");
       await loadUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao editar funcionário");
+      const message = err instanceof Error ? err.message : "Erro ao editar funcionário";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -105,9 +114,12 @@ export function FuncionariosPage({ auth }: FuncionariosPageProps) {
       if (editingId === user.id) {
         cancelEdit();
       }
+      toast.success("Funcionário excluído com sucesso.");
       await loadUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir funcionário");
+      const message = err instanceof Error ? err.message : "Erro ao excluir funcionário";
+      setError(message);
+      toast.error(message);
     }
   };
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { AuthState, Horario, Product } from "../types";
 import { createHorario, getHorarios, getProducts, remarcarHorario } from "../api";
 
@@ -31,7 +32,9 @@ export function ClientePage({ auth }: ClientePageProps) {
       setHorarios(h);
       if (p.length) setSelectedProductId(p[0].id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      const message = err instanceof Error ? err.message : "Erro ao carregar dados";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -66,9 +69,12 @@ export function ClientePage({ auth }: ClientePageProps) {
         auth
       );
       setDateTime("");
+      toast.success("Agendamento criado com sucesso.");
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar agendamento");
+      const message = err instanceof Error ? err.message : "Erro ao criar agendamento";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -83,9 +89,12 @@ export function ClientePage({ auth }: ClientePageProps) {
 
     try {
       await remarcarHorario(horario.id, new Date(selectedDateTime).toISOString(), auth);
+      toast.success("Agendamento remarcado com sucesso.");
       await loadData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao remarcar agendamento");
+      const message = err instanceof Error ? err.message : "Erro ao remarcar agendamento";
+      setError(message);
+      toast.error(message);
     }
   };
 

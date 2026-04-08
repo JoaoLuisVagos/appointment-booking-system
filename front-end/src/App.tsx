@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 import { AuthState } from './types';
 import { loadAuth, saveAuth } from './auth';
@@ -36,6 +37,18 @@ function App() {
   return (
     <div className="app">
       <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              border: '1px solid #d3e2f0',
+              borderRadius: '12px',
+              background: '#ffffff',
+              color: '#1a2b3f',
+            },
+          }}
+        />
         <Header auth={auth} onLogout={handleLogout} />
         <Routes>
           <Route

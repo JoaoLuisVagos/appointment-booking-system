@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState, Product } from "../types";
 import { createProduct, getProducts } from "../api";
 
@@ -23,7 +24,9 @@ export function CadastrosPage({ auth }: CadastrosPageProps) {
       const list = await getProducts(auth);
       setProducts(list);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar produtos");
+      const message = err instanceof Error ? err.message : "Erro ao carregar produtos";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -42,9 +45,12 @@ export function CadastrosPage({ auth }: CadastrosPageProps) {
       await createProduct({ nome: productName.trim(), preco: productPrice }, auth);
       setProductName("");
       setProductPrice(0);
+      toast.success("Produto cadastrado com sucesso.");
       await loadProducts();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao criar produto");
+      const message = err instanceof Error ? err.message : "Erro ao criar produto";
+      setError(message);
+      toast.error(message);
     }
   };
 

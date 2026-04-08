@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState } from "../types";
 import { register } from "../auth";
 import { isLojaRole } from "../roles";
@@ -24,13 +25,16 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
     try {
       const auth = await register(nome.trim(), email.trim(), senha, "cliente");
       onRegister(auth);
+      toast.success("Conta criada com sucesso.");
       if (isLojaRole(auth.role)) {
         navigate("/loja");
       } else {
         navigate("/cliente");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao registrar");
+      const message = err instanceof Error ? err.message : "Erro ao registrar";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
