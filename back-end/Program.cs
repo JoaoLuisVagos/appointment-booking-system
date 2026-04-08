@@ -95,6 +95,16 @@ app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BookingContext>();
+
+    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+    db.Database.ExecuteSqlRaw("ALTER TABLE horarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+    db.Database.ExecuteSqlRaw("UPDATE usuarios SET loja_id = id WHERE role = 'loja' AND (loja_id IS NULL OR loja_id = 0)");
+}
+
 app.MapControllers();
 
 app.Run();

@@ -6,6 +6,7 @@ export interface AuthResponse {
   nome: string;
   email: string;
   role: UserRole;
+  lojaId?: number | null;
 }
 
 export interface AuthState extends AuthResponse {}

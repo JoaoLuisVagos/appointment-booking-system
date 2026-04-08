@@ -39,6 +39,7 @@ export function Header({ auth, onLogout }: HeaderProps) {
                 <Link to="/loja/dashboard">Painel</Link>
                 <Link to="/loja/cadastros">Cadastros</Link>
                 <Link to="/loja/horarios">Horários</Link>
+                <Link to="/loja/funcionarios">Funcionários</Link>
               </>
             ) : (
               <>

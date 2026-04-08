@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BCrypt.Net;
+using System.Security.Claims;
 using back_end.Data;
 using back_end.Models;
 
@@ -21,14 +22,28 @@ public class UsersController : ControllerBase
     [HttpGet]
     public IActionResult GetUsers()
     {
-        var users = _context.Users.ToList();
+        var lojaId = GetScopeLojaId();
+        if (lojaId == null)
+        {
+            return Ok(Array.Empty<User>());
+        }
+
+        var users = _context.Users
+            .Where(u => u.LojaId == lojaId.Value || u.Id == lojaId.Value)
+            .ToList();
         return Ok(users);
     }
 
     [HttpGet("{id}")]
     public IActionResult GetUser(int id)
     {
-        var user = _context.Users.Find(id);
+        var lojaId = GetScopeLojaId();
+        if (lojaId == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var user = _context.Users.SingleOrDefault(u => u.Id == id && (u.LojaId == lojaId.Value || u.Id == lojaId.Value));
         if (user == null)
         {
             return NotFound("Usuário não encontrado.");
@@ -50,13 +65,37 @@ public class UsersController : ControllerBase
             return Conflict("Já existe um usuário cadastrado com esse email.");
         }
 
+        var normalizedRole = NormalizeRole(request.Role);
         var user = new User
         {
             Nome = request.Nome,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Senha),
-            Role = NormalizeRole(request.Role)
+            Role = normalizedRole
         };
+
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            var lojaId = GetScopeLojaId();
+            if (lojaId == null)
+            {
+                return BadRequest("Não foi possível identificar a loja para este usuário.");
+            }
+
+            if (normalizedRole == "loja")
+            {
+                return BadRequest("Use o cadastro de loja para criar uma nova loja.");
+            }
+
+            user.LojaId = lojaId.Value;
+        }
+        else
+        {
+            if (normalizedRole != "cliente")
+            {
+                return BadRequest("Cadastro anônimo permitido apenas para cliente.");
+            }
+        }
 
         _context.Users.Add(user);
         _context.SaveChanges();
@@ -71,7 +110,13 @@ public class UsersController : ControllerBase
             return BadRequest("Nome e Email são obrigatórios.");
         }
 
-        var existingUser = _context.Users.Find(id);
+        var lojaId = GetScopeLojaId();
+        if (lojaId == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var existingUser = _context.Users.SingleOrDefault(u => u.Id == id && (u.LojaId == lojaId.Value || u.Id == lojaId.Value));
         if (existingUser == null)
         {
             return NotFound("Usuário não encontrado.");
@@ -86,7 +131,13 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public IActionResult DeleteUser(int id)
     {
-        var user = _context.Users.Find(id);
+        var lojaId = GetScopeLojaId();
+        if (lojaId == null)
+        {
+            return NotFound("Usuário não encontrado.");
+        }
+
+        var user = _context.Users.SingleOrDefault(u => u.Id == id && u.LojaId == lojaId.Value);
         if (user == null)
         {
             return NotFound("Usuário não encontrado.");
@@ -116,5 +167,40 @@ public class UsersController : ControllerBase
         }
 
         return normalizedRole;
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+
+        return int.TryParse(idClaim, out var userId) ? userId : null;
+    }
+
+    private int? GetScopeLojaId()
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null)
+        {
+            return null;
+        }
+
+        var user = _context.Users
+            .Where(u => u.Id == userId.Value)
+            .Select(u => new { u.Id, u.Role, u.LojaId })
+            .SingleOrDefault();
+
+        if (user == null)
+        {
+            return null;
+        }
+
+        var role = NormalizeRole(user.Role);
+        if (role == "loja")
+        {
+            return user.LojaId ?? user.Id;
+        }
+
+        return user.LojaId;
     }
 }

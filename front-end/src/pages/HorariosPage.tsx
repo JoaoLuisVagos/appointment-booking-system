@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthState, Horario, Product, User } from "../types";
-import { createHorario, getHorarios, getProducts, getUsers } from "../api";
+import { createHorario, getHorarios, getProducts, getUsers, remarcarHorario } from "../api";
 import { isLojaRole } from "../roles";
 
 interface HorariosPageProps {
@@ -18,6 +18,13 @@ export function HorariosPage({ auth }: HorariosPageProps) {
   const [scheduleUserId, setScheduleUserId] = useState<number>(auth.userId);
   const [scheduleProductId, setScheduleProductId] = useState<number>(0);
   const [scheduleDateTime, setScheduleDateTime] = useState("");
+  const [rescheduleValues, setRescheduleValues] = useState<Record<number, string>>({});
+
+  const toDateTimeLocalValue = (isoDateTime: string) => {
+    const date = new Date(isoDateTime);
+    const timezoneOffsetInMs = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - timezoneOffsetInMs).toISOString().slice(0, 16);
+  };
 
   const funcionarios = users.filter((user) => isLojaRole(user.role));
 
@@ -88,6 +95,23 @@ export function HorariosPage({ auth }: HorariosPageProps) {
       await loadAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar horário");
+    }
+  };
+
+  const handleRemarcar = async (horario: Horario) => {
+    setError(null);
+
+    const selectedDateTime = rescheduleValues[horario.id] ?? toDateTimeLocalValue(horario.dataHora);
+    if (!selectedDateTime) {
+      setError("Escolha uma nova data e hora válidas.");
+      return;
+    }
+
+    try {
+      await remarcarHorario(horario.id, new Date(selectedDateTime).toISOString(), auth);
+      await loadAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao remarcar horário");
     }
   };
 
@@ -178,6 +202,7 @@ export function HorariosPage({ auth }: HorariosPageProps) {
                     <th>Funcionário</th>
                     <th>Produto</th>
                     <th>Data e hora</th>
+                    <th>Remarcar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,6 +212,23 @@ export function HorariosPage({ auth }: HorariosPageProps) {
                       <td>{horario.usuario?.nome ?? horario.usuarioId}</td>
                       <td>{horario.produto?.nome ?? horario.produtoId}</td>
                       <td>{new Date(horario.dataHora).toLocaleString()}</td>
+                      <td>
+                        <div className="table-action-inline">
+                          <input
+                            type="datetime-local"
+                            value={rescheduleValues[horario.id] ?? toDateTimeLocalValue(horario.dataHora)}
+                            onChange={(e) =>
+                              setRescheduleValues((prev) => ({
+                                ...prev,
+                                [horario.id]: e.target.value,
+                              }))
+                            }
+                          />
+                          <button type="button" onClick={() => handleRemarcar(horario)}>
+                            Remarcar
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

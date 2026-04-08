@@ -15,4 +15,8 @@ public record AuthResponse(
     int UserId,
     string Nome,
     string Email,
-    string Role);
+    string Role,
+    int? LojaId);
+
+public record RemarcarHorarioRequest(
+    DateTime DataHora);

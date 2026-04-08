@@ -87,6 +87,10 @@ export function DashboardPage({ auth }: DashboardPageProps) {
               <span>Produtos e cadastro</span>
               <strong>Gerenciar serviços</strong>
             </Link>
+            <Link className="dashboard-link-card" to="/loja/funcionarios">
+              <span>Equipe da loja</span>
+              <strong>Cadastrar funcionários</strong>
+            </Link>
             <Link className="dashboard-link-card" to="/loja/horarios">
               <span>Horários cadastrados</span>
               <strong>Ver agenda</strong>

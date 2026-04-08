@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthState, Horario, Product } from "../types";
-import { createHorario, getHorarios, getProducts } from "../api";
+import { createHorario, getHorarios, getProducts, remarcarHorario } from "../api";
 
 interface ClientePageProps {
   auth: AuthState;
@@ -14,6 +14,13 @@ export function ClientePage({ auth }: ClientePageProps) {
 
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [dateTime, setDateTime] = useState("");
+  const [rescheduleValues, setRescheduleValues] = useState<Record<number, string>>({});
+
+  const toDateTimeLocalValue = (isoDateTime: string) => {
+    const date = new Date(isoDateTime);
+    const timezoneOffsetInMs = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - timezoneOffsetInMs).toISOString().slice(0, 16);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -62,6 +69,23 @@ export function ClientePage({ auth }: ClientePageProps) {
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao criar agendamento");
+    }
+  };
+
+  const handleRemarcar = async (horario: Horario) => {
+    setError(null);
+
+    const selectedDateTime = rescheduleValues[horario.id] ?? toDateTimeLocalValue(horario.dataHora);
+    if (!selectedDateTime) {
+      setError("Selecione a nova data e hora para remarcar.");
+      return;
+    }
+
+    try {
+      await remarcarHorario(horario.id, new Date(selectedDateTime).toISOString(), auth);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao remarcar agendamento");
     }
   };
 
@@ -147,6 +171,7 @@ export function ClientePage({ auth }: ClientePageProps) {
                     <th>ID</th>
                     <th>Produto</th>
                     <th>Data e hora</th>
+                    <th>Remarcar</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -155,6 +180,23 @@ export function ClientePage({ auth }: ClientePageProps) {
                       <td>{horario.id}</td>
                       <td>{horario.produto?.nome ?? horario.produtoId}</td>
                       <td>{new Date(horario.dataHora).toLocaleString()}</td>
+                      <td>
+                        <div className="table-action-inline">
+                          <input
+                            type="datetime-local"
+                            value={rescheduleValues[horario.id] ?? toDateTimeLocalValue(horario.dataHora)}
+                            onChange={(e) =>
+                              setRescheduleValues((prev) => ({
+                                ...prev,
+                                [horario.id]: e.target.value,
+                              }))
+                            }
+                          />
+                          <button type="button" onClick={() => handleRemarcar(horario)}>
+                            Remarcar
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

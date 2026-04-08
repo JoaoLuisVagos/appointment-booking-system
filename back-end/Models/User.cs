@@ -22,5 +22,8 @@ public class User
     [Column("role")]
     public string Role { get; set; } = "cliente";
 
+    [Column("loja_id")]
+    public int? LojaId { get; set; }
+
     public ICollection<Horarios> Horarios { get; set; } = new List<Horarios>();
 }

@@ -36,9 +36,9 @@ public class AuthController : ControllerBase
         }
 
         var normalizedRole = NormalizeRole(request.Role);
-        if (normalizedRole != "cliente" && normalizedRole != "loja" && normalizedRole != "funcionario")
+        if (normalizedRole != "cliente" && normalizedRole != "loja")
         {
-            return BadRequest("Role inválida. Use: cliente, loja ou funcionario.");
+            return BadRequest("Role inválida. Use: cliente ou loja.");
         }
 
         var user = new User
@@ -52,8 +52,14 @@ public class AuthController : ControllerBase
         _context.Users.Add(user);
         _context.SaveChanges();
 
+        if (normalizedRole == "loja")
+        {
+            user.LojaId = user.Id;
+            _context.SaveChanges();
+        }
+
         var token = GenerateJwtToken(user);
-        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role)));
+        return Created(string.Empty, new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role), user.LojaId));
     }
 
     [HttpPost("login")]
@@ -71,7 +77,7 @@ public class AuthController : ControllerBase
         }
 
         var token = GenerateJwtToken(user);
-        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role)));
+        return Ok(new AuthResponse(token, user.Id, user.Nome, user.Email, NormalizeRole(user.Role), user.LojaId));
     }
 
     private string GenerateJwtToken(User user)
@@ -83,10 +89,16 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Nome),
             new Claim(ClaimTypes.Role, NormalizeRole(user.Role))
         };
+
+        if (user.LojaId.HasValue)
+        {
+            claims.Add(new Claim("loja_id", user.LojaId.Value.ToString()));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

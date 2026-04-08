@@ -17,6 +17,9 @@ public class Horarios
     [Column("data_hora")]
     public DateTime DataHora { get; set; }
 
+    [Column("loja_id")]
+    public int? LojaId { get; set; }
+
     public User? Usuario { get; set; }
     public Products? Produto { get; set; }
 }

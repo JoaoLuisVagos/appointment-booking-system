@@ -14,5 +14,8 @@ public class Products
     [Column("preco")]
     public decimal Preco { get; set; }
 
+    [Column("loja_id")]
+    public int? LojaId { get; set; }
+
     public ICollection<Horarios> Horarios { get; set; } = new List<Horarios>();
 }

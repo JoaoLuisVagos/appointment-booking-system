@@ -11,6 +11,7 @@ import RegisterLojaPage from './pages/RegisterLojaPage';
 import DashboardPage from './pages/DashboardPage';
 import CadastrosPage from './pages/CadastrosPage';
 import HorariosPage from './pages/HorariosPage';
+import FuncionariosPage from './pages/FuncionariosPage';
 import ClientePage from './pages/ClientePage';
 import { isLojaRole } from './roles';
 
@@ -88,6 +89,14 @@ function App() {
             element={
               <ProtectedRoute auth={auth} allowedRoles={['loja', 'funcionario', 'vendedor']}>
                 {auth && <HorariosPage auth={auth} />}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loja/funcionarios"
+            element={
+              <ProtectedRoute auth={auth} allowedRoles={['loja']}>
+                {auth && <FuncionariosPage auth={auth} />}
               </ProtectedRoute>
             }
           />
