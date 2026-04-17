@@ -41,7 +41,7 @@ Resolver um problema comum de operação: organizar serviços, equipe e agenda e
 ### Back-end
 - .NET 8
 - ASP.NET Core Web API
-- Entity Framework Core + MySQL
+- Entity Framework Core + PostgreSQL
 - JWT Bearer Authentication
 - BCrypt (hash de senha)
 
@@ -87,7 +87,7 @@ Acessos:
 - Front-end: http://localhost:5173
 - API: http://localhost:5000
 - Swagger: http://localhost:5000/swagger
-- Banco (host): localhost:3307
+- Banco (host): localhost:5432
 
 ### Opcao 2: Execucao local
 

@@ -17,8 +17,6 @@
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Microsoft.IdentityModel.Tokens.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Microsoft.OpenApi.dll
-/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/MySqlConnector.dll
-/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Swashbuckle.AspNetCore.Swagger.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -45,3 +43,5 @@
 /home/jlvagos/workspace/appointment-booking-system/back-end/obj/Release/net8.0/back-end.pdb
 /home/jlvagos/workspace/appointment-booking-system/back-end/obj/Release/net8.0/back-end.genruntimeconfig.cache
 /home/jlvagos/workspace/appointment-booking-system/back-end/obj/Release/net8.0/ref/back-end.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Npgsql.dll
+/home/jlvagos/workspace/appointment-booking-system/back-end/bin/Release/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll

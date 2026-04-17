@@ -2,7 +2,20 @@ import { AuthResponse, AuthState } from "./types";
 
 const STORAGE_KEY = "booking_app_auth";
 
-export const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:5000/api";
+const DEV_API_BASE = "http://localhost:5000/api";
+const PROD_API_BASE = "https://appointment-booking-system-tjfd.onrender.com/api";
+
+function resolveApiBase(): string {
+  const explicitApiBase = import.meta.env.VITE_API_BASE?.trim();
+  if (explicitApiBase) return explicitApiBase;
+
+  const hostname = window.location.hostname;
+  const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+
+  return isLocalHost ? DEV_API_BASE : PROD_API_BASE;
+}
+
+export const API_BASE = resolveApiBase();
 
 export function loadAuth(): AuthState | null {
   try {
