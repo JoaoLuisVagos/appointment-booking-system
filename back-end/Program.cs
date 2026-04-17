@@ -8,6 +8,17 @@ using back_end.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var renderPort = Environment.GetEnvironmentVariable("PORT");
+var aspnetcoreUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+if (!string.IsNullOrWhiteSpace(renderPort))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{renderPort}");
+}
+else if (string.IsNullOrWhiteSpace(aspnetcoreUrls))
+{
+    builder.WebHost.UseUrls("http://0.0.0.0:5000");
+}
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -29,8 +40,16 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? "change_this_secret_in_producti
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "appointment-booking-system";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "appointment-booking-system";
 
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? "server=localhost;user=root;password=;database=booking_system;SslMode=None;AllowPublicKeyRetrieval=True";
+
 builder.Services.AddDbContext<BookingContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection") ?? "server=localhost;user=root;password=;database=booking_system;", new MySqlServerVersion(new Version(8, 0, 21))));
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        mysql => mysql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -95,11 +114,21 @@ app.UseCors(CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<BookingContext>();
+var shouldInitializeDatabase =
+    !app.Environment.IsProduction()
+    || string.Equals(
+        Environment.GetEnvironmentVariable("RUN_DB_INIT"),
+        "true",
+        StringComparison.OrdinalIgnoreCase);
 
-    db.Database.ExecuteSqlRaw(@"
+if (shouldInitializeDatabase)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<BookingContext>();
+
+        db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS lojas (
             id INT PRIMARY KEY,
             nome VARCHAR(100) NOT NULL,
@@ -111,28 +140,49 @@ using (var scope = app.Services.CreateScope())
             usuario_admin_id INT NULL
         )");
 
-    db.Database.ExecuteSqlRaw("ALTER TABLE lojas ADD COLUMN IF NOT EXISTS cor_secundaria_fonte VARCHAR(7) NOT NULL DEFAULT '#5f6f82'");
-    db.Database.ExecuteSqlRaw("ALTER TABLE lojas MODIFY COLUMN logo_url TEXT NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefone VARCHAR(30) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS endereco VARCHAR(200) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cidade VARCHAR(80) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS estado VARCHAR(40) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cep VARCHAR(20) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS complemento VARCHAR(120) NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE produtos ADD COLUMN IF NOT EXISTS loja_id INT NULL");
-    db.Database.ExecuteSqlRaw("ALTER TABLE horarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE lojas ADD COLUMN cor_secundaria_fonte VARCHAR(7) NOT NULL DEFAULT '#5f6f82'");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE lojas MODIFY COLUMN logo_url TEXT NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN loja_id INT NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN telefone VARCHAR(30) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN endereco VARCHAR(200) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN cidade VARCHAR(80) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN estado VARCHAR(40) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN cep VARCHAR(20) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN complemento VARCHAR(120) NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE produtos ADD COLUMN loja_id INT NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE horarios ADD COLUMN loja_id INT NULL");
 
-    db.Database.ExecuteSqlRaw("UPDATE usuarios SET loja_id = id WHERE role = 'loja' AND (loja_id IS NULL OR loja_id = 0)");
+        ExecuteSqlIgnoringKnownErrors(db, "UPDATE usuarios SET loja_id = id WHERE role = 'loja' AND (loja_id IS NULL OR loja_id = 0)");
 
-    db.Database.ExecuteSqlRaw(@"
+        ExecuteSqlIgnoringKnownErrors(db, @"
         INSERT INTO lojas (id, nome, cor_primaria, usuario_admin_id)
         SELECT u.id, COALESCE(NULLIF(u.nome, ''), 'BookingApp'), '#0e7490', u.id
         FROM usuarios u
         LEFT JOIN lojas l ON l.id = u.loja_id
         WHERE u.role = 'loja' AND u.loja_id IS NOT NULL AND l.id IS NULL");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Falha ao inicializar schema do banco. API continuara em execucao.");
+    }
 }
 
 app.MapControllers();
 
 app.Run();
+
+static void ExecuteSqlIgnoringKnownErrors(BookingContext db, string sql)
+{
+    try
+    {
+        db.Database.ExecuteSqlRaw(sql);
+    }
+    catch (MySqlException ex) when (
+        ex.Message.Contains("Duplicate column name", StringComparison.OrdinalIgnoreCase)
+        || ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase)
+        || ex.Message.Contains("doesn't exist", StringComparison.OrdinalIgnoreCase)
+        || ex.Message.Contains("Unknown column", StringComparison.OrdinalIgnoreCase))
+    {
+        // Idempotent bootstrap: ignore schema drift errors already covered by previous runs.
+    }
+}
