@@ -18,6 +18,24 @@ public class LojasController : ControllerBase
         _context = context;
     }
 
+    [HttpGet("publica/{id:int}")]
+    [AllowAnonymous]
+    public IActionResult GetLojaPublica(int id)
+    {
+        if (id <= 0)
+        {
+            return BadRequest("Loja inválida.");
+        }
+
+        var loja = _context.Lojas.SingleOrDefault(l => l.Id == id);
+        if (loja == null)
+        {
+            return NotFound("Loja não encontrada.");
+        }
+
+        return Ok(ToResponse(loja));
+    }
+
     [HttpGet("minha-loja")]
     public IActionResult GetMinhaLoja()
     {

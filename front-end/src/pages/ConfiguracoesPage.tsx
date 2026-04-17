@@ -166,6 +166,41 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
     }
   };
 
+  const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem válido.");
+      event.target.value = "";
+      return;
+    }
+
+    const maxBytes = 1024 * 1024;
+    if (file.size > maxBytes) {
+      toast.error("A imagem deve ter no máximo 1MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      if (!result) {
+        toast.error("Não foi possível ler a imagem selecionada.");
+        return;
+      }
+      setLogoUrl(result);
+      toast.success("Imagem da logo carregada.");
+    };
+    reader.onerror = () => {
+      toast.error("Falha ao processar o arquivo de imagem.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <main className="page seller-page">
       <section className={isLoja ? "seller-hero" : "client-hero"}>
@@ -252,13 +287,18 @@ export function ConfiguracoesPage({ auth, settings, onSettingsChange }: Configur
                   </div>
                 </label>
                 <label>
-                  URL da logo
+                  Logo da loja
                   <input
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="https://.../logo.png"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoFileChange}
                   />
                 </label>
+                {logoUrl && (
+                  <button type="button" className="action-secondary" onClick={() => setLogoUrl("")}>
+                    Remover logo
+                  </button>
+                )}
 
                 <div className="settings-actions">
                   <button type="submit">Salvar configurações</button>

@@ -146,6 +146,15 @@ export async function getMinhaLojaSettings(auth?: AuthState): Promise<StoreSetti
   return toStoreSettings(data);
 }
 
+export async function getLojaPublicaSettings(lojaId: number): Promise<StoreSettings> {
+  const res = await safeFetch(`${API_BASE}/lojas/publica/${lojaId}`, {
+    method: "GET",
+    headers: buildAuthHeaders(),
+  });
+  const data = await handleResponse<LojaSettingsResponse>(res);
+  return toStoreSettings(data);
+}
+
 export async function updateMinhaLojaSettings(
   data: StoreSettings,
   auth?: AuthState

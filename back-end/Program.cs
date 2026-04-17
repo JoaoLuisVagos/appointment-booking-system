@@ -107,11 +107,12 @@ using (var scope = app.Services.CreateScope())
             endereco VARCHAR(200) NULL,
             cor_primaria VARCHAR(7) NOT NULL DEFAULT '#0e7490',
             cor_secundaria_fonte VARCHAR(7) NOT NULL DEFAULT '#5f6f82',
-            logo_url VARCHAR(500) NULL,
+            logo_url TEXT NULL,
             usuario_admin_id INT NULL
         )");
 
     db.Database.ExecuteSqlRaw("ALTER TABLE lojas ADD COLUMN IF NOT EXISTS cor_secundaria_fonte VARCHAR(7) NOT NULL DEFAULT '#5f6f82'");
+    db.Database.ExecuteSqlRaw("ALTER TABLE lojas MODIFY COLUMN logo_url TEXT NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS loja_id INT NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS telefone VARCHAR(30) NULL");
     db.Database.ExecuteSqlRaw("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS endereco VARCHAR(200) NULL");

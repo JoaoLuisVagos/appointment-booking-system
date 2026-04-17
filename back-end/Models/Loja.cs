@@ -26,7 +26,7 @@ public class Loja
     [Column("cor_secundaria_fonte")]
     public string CorSecundariaFonte { get; set; } = "#5f6f82";
 
-    [Column("logo_url")]
+    [Column("logo_url", TypeName = "longtext")]
     public string? LogoUrl { get; set; }
 
     [Column("usuario_admin_id")]
