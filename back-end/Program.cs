@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using back_end.Data;
@@ -87,7 +88,11 @@ app.UseExceptionHandler(errorApp =>
 
         var message = "Ocorreu um erro interno no servidor.";
 
-        if (exception is NpgsqlException)
+        if (exception is DbUpdateException dbUpdateException && TryGetPostgresException(dbUpdateException, out _))
+        {
+            message = "Falha ao salvar dados no banco de dados. Verifique se as tabelas foram criadas no Supabase.";
+        }
+        else if (exception is NpgsqlException)
         {
             message = "Falha ao acessar o banco de dados. Tente novamente em instantes.";
         }
@@ -220,4 +225,22 @@ static void ExecuteSqlIgnoringKnownErrors(BookingContext db, string sql)
     {
         // Idempotent bootstrap: ignore schema drift errors already covered by previous runs.
     }
+}
+
+static bool TryGetPostgresException(DbUpdateException exception, out PostgresException? postgresException)
+{
+    postgresException = exception.InnerException as PostgresException;
+
+    if (postgresException != null)
+    {
+        return true;
+    }
+
+    if (exception.InnerException is not null)
+    {
+        postgresException = exception.InnerException.InnerException as PostgresException;
+        return postgresException != null;
+    }
+
+    return false;
 }
