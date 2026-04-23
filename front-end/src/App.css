@@ -120,6 +120,40 @@ a {
   color: #ffffff;
 }
 
+.app-banner {
+  width: min(1180px, 100% - 2rem);
+  margin: 0.85rem auto 0;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(var(--primary-rgb), 0.22);
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(255, 246, 236, 0.95));
+  color: #2b3f53;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.app-banner__tag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  background: rgba(var(--primary-rgb), 0.14);
+  color: var(--primary-2);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.app-banner p {
+  font-size: 0.93rem;
+  color: #355066;
+}
+
 .header__logout {
   border: none;
   border-radius: 10px;
@@ -389,6 +423,70 @@ a {
   border-radius: 11px;
   padding: 0.8rem;
   background: #f6fbff;
+}
+
+.invite-link-box--dashboard {
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  border-style: solid;
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.09), #f6fbff);
+}
+
+.invite-link-box--dashboard strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: "Sora", "Manrope", sans-serif;
+  color: #17324b;
+}
+
+.invite-link-box--dashboard p {
+  margin-top: 0.25rem;
+  color: var(--secondary-font);
+  font-size: 0.92rem;
+}
+
+.invite-link-label {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  background: rgba(var(--primary-rgb), 0.12);
+  color: var(--primary-2);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.invite-link-box__actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.invite-link-box__actions input {
+  min-height: 44px;
+  border: 1px solid #cfdcea;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--text);
+  padding: 0.72rem 0.85rem;
+}
+
+.copy-link-button {
+  border: none;
+  min-height: 44px;
+  border-radius: 11px;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(135deg, #f07b4f 0%, #d96235 100%);
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.copy-link-button:hover {
+  filter: brightness(1.03);
 }
 
 .invite-link-box .action-secondary {
@@ -723,6 +821,31 @@ a {
   font-size: 0.92rem;
 }
 
+.auth-locked-box {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.35rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(var(--primary-rgb), 0.08), rgba(255, 255, 255, 0.94));
+  border: 1px solid rgba(var(--primary-rgb), 0.18);
+}
+
+.auth-locked-box p {
+  color: var(--secondary-font);
+}
+
+.auth-locked-link {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 @keyframes fade-slide {
   from {
     opacity: 0;
@@ -755,6 +878,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .invite-link-box--dashboard {
+    grid-template-columns: 1fr;
+  }
+
   .client-form-grid {
     grid-template-columns: 1fr;
   }
@@ -777,6 +904,11 @@ a {
 
   .auth-card {
     padding: 1.2rem;
+  }
+
+  .app-banner {
+    width: min(1180px, 100% - 1rem);
+    flex-direction: column;
   }
 
   .auth-side {

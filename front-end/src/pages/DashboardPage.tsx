@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { AuthState, Horario, Product } from "../types";
 import { getHorarios, getProducts } from "../api";
 import { isFuncionarioRole, isLojaOwnerRole } from "../roles";
@@ -13,6 +14,9 @@ export function DashboardPage({ auth }: DashboardPageProps) {
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const cadastroClienteLink = isLojaOwnerRole(auth.role) && auth.lojaId
+    ? `${window.location.origin}/cadastro_cliente/${auth.lojaId}`
+    : "";
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -56,6 +60,19 @@ export function DashboardPage({ auth }: DashboardPageProps) {
     .filter((date) => date.getTime() > Date.now())
     .sort((a, b) => a.getTime() - b.getTime())[0];
 
+  const handleCopyCadastroLink = async () => {
+    if (!cadastroClienteLink) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(cadastroClienteLink);
+      toast.success("Link de cadastro copiado.");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
+
   return (
     <main className="page seller-page">
       <section className="seller-hero">
@@ -92,6 +109,24 @@ export function DashboardPage({ auth }: DashboardPageProps) {
             <h2>Atalhos</h2>
             <p>Abra rapidamente a tela de produtos, horários ou consulte o próximo compromisso.</p>
           </div>
+
+          {cadastroClienteLink && (
+            <div className="invite-link-box invite-link-box--dashboard">
+              <div>
+                <span className="invite-link-label">Cadastro de clientes</span>
+                <strong>Compartilhe este link com seus clientes</strong>
+                <p>
+                  O acesso público para clientes fica concentrado aqui para evitar cadastros fora da sua loja.
+                </p>
+              </div>
+              <div className="invite-link-box__actions">
+                <input value={cadastroClienteLink} readOnly />
+                <button type="button" className="copy-link-button" onClick={handleCopyCadastroLink}>
+                  Copiar link
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="dashboard-links">
             {!isFuncionario && (

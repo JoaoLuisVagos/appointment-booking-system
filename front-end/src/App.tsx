@@ -146,6 +146,13 @@ function App() {
         }}
       />
       <Header auth={auth} onLogout={handleLogout} storeSettings={storeSettings} />
+      <section className="app-banner" role="status" aria-live="polite">
+        <span className="app-banner__tag">Aviso</span>
+        <p>
+          Esta aplicação usa uma API gratuita, então a primeira resposta depois de um tempo sem uso
+          pode demorar alguns segundos para subir novamente.
+        </p>
+      </section>
       <Routes>
         <Route
           path="/login"

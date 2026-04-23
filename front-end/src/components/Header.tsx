@@ -33,11 +33,7 @@ export function Header({ auth, onLogout, storeSettings }: HeaderProps) {
       </div>
       <nav className="header__nav">
         {!auth && (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Registrar</Link>
-            <Link to="/register/loja">Registrar loja</Link>
-          </>
+          <Link to="/login">Login</Link>
         )}
         {auth && (
           <>

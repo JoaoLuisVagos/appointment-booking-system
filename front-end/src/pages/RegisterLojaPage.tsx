@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthState } from "../types";
 import { register } from "../auth";
@@ -120,7 +120,7 @@ export function RegisterLojaPage({ onRegister }: RegisterLojaPageProps) {
               {loading ? "Cadastrando..." : "Cadastrar loja"}
             </button>
             <p className="auth-helper-text">
-              Quer cadastrar cliente ou funcionario? <Link to="/register">Use o cadastro padrão</Link>.
+              Clientes devem ser cadastrados pelo link público da loja disponível em Configurações.
             </p>
           </form>
         </div>

@@ -50,6 +50,44 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
     }
   };
 
+  if (!hasLojaInvite) {
+    return (
+      <div className="page auth-page">
+        <div className="auth-shell">
+          <aside className="auth-side">
+            <h1>Cadastro de cliente por convite</h1>
+            <p>
+              O cadastro público foi desativado. Clientes entram apenas pelo link compartilhado pela
+              loja nas configurações.
+            </p>
+            <ul className="auth-points">
+              <li>Cadastro vinculado à loja correta</li>
+              <li>Mais controle para a operação</li>
+              <li>Link disponível no painel da loja</li>
+            </ul>
+          </aside>
+
+          <div className="auth-card">
+            <div className="auth-headline">
+              <span>Acesso restrito</span>
+              <h2>Use o link da loja</h2>
+            </div>
+
+            <div className="auth-locked-box">
+              <p>
+                Para criar uma conta de cliente, use o link público gerado na tela de configurações da
+                loja.
+              </p>
+              <Link className="auth-locked-link" to="/login">
+                Voltar para o login
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page auth-page">
       <div className="auth-shell">
@@ -107,11 +145,9 @@ export function RegisterPage({ onRegister }: RegisterPageProps) {
             <button type="submit" disabled={loading}>
               {loading ? "Cadastrando..." : "Cadastrar"}
             </button>
-            {!hasLojaInvite && (
-              <p className="auth-helper-text">
-                Funcionários devem ser criados pela loja no painel. Para lojas, <Link to="/register/loja">use o cadastro de loja</Link>.
-              </p>
-            )}
+            <p className="auth-helper-text">
+              Funcionários devem ser criados pela loja no painel. Clientes entram apenas pelo link de convite da loja.
+            </p>
           </form>
         </div>
       </div>
