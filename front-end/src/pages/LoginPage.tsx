@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AuthState } from "../types";
 import { login } from "../auth";
@@ -50,6 +50,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <li>Painel visual com informacoes rapidas</li>
             <li>Fluxo de atendimento mais profissional</li>
           </ul>
+          <div className="auth-side-cta">
+            <span>Quer criar uma nova loja?</span>
+            <Link to="/register/loja" className="auth-side-cta__button">
+              Registrar loja
+            </Link>
+          </div>
         </aside>
 
         <div className="auth-card">

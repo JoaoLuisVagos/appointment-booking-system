@@ -256,6 +256,37 @@ a {
   box-shadow: 0 0 0 4px rgba(125, 224, 255, 0.18);
 }
 
+.auth-side-cta {
+  margin-top: 0.3rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  display: grid;
+  gap: 0.65rem;
+}
+
+.auth-side-cta span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(243, 251, 255, 0.88);
+}
+
+.auth-side-cta__button {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-side-cta__button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.22);
+}
+
 .auth-card {
   width: min(480px, 100%);
   background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
