@@ -176,13 +176,7 @@ function App() {
         />
         <Route
           path="/cadastro_cliente/:lojaId"
-          element={
-            auth ? (
-              <Navigate to={isLojaRole(auth.role) ? '/loja/dashboard' : '/cliente'} replace />
-            ) : (
-              <RegisterPage onRegister={handleLogin} />
-            )
-          }
+          element={<RegisterPage onRegister={handleLogin} />}
         />
         <Route
           path="/register/loja"
