@@ -1,49 +1,45 @@
 # Appointment Booking System
 
-Sistema full stack de agendamento para pequenos negócios, com foco em operação diária de loja e atendimento ao cliente.
+Sistema full stack de agendamento que estou construindo para treinar fluxo real de produto: autenticação, permissões, multi-tenant por loja e deploy em produção.
 
-Este projeto foi construido para demonstrar entrega ponta a ponta: API, front-end, banco relacional e ambiente reproduzivel com Docker.
+## Sobre o projeto
 
-## Objetivo
+A ideia é simples: cada loja consegue organizar produtos, equipe e agenda em um lugar só.
 
-Resolver um problema comum de operação: organizar serviços, equipe e agenda em um fluxo único, evitando controle manual disperso.
+Também estou usando esse projeto para evoluir como dev, então ele vem sendo melhorado em ciclos curtos (feature, feedback, ajuste).
 
-## Perfis e regras de acesso
+## Links em produção
 
-- Cliente:
-	agenda serviços e gerencia seus proprios horarios.
-- Loja:
-	cadastra produtos, funcionários e gerencia a agenda da equipe.
-- Funcionario:
-	visualiza apenas seus proprios horarios e não pode cadastrar outros funcionários.
+- Front-end (Vercel): https://appointment-booking-system-orcin.vercel.app
+- API (Render): https://appointment-booking-system-tjfd.onrender.com
 
-## Funcionalidades implementadas
+Observação: como a API está em plano gratuito, a primeira requisição pode demorar um pouco quando o serviço está "frio".
 
-- Autenticação com JWT (registro e login).
-- Isolamento de dados por loja (produtos, usuarios e horarios).
-- Cadastro e gestão de produtos por loja.
-- Gestão de funcionários pela loja (criar, editar e excluir).
-- Agendamento e remarcacao de horarios.
-- Regras de permissão por papel aplicadas no back-end.
-- Tratamento de erros com mensagens amigaveis no front-end.
+## Perfis do sistema
 
-## Decisoes tecnicas relevantes
+- Cliente: agenda e acompanha seus próprios horários.
+- Loja: gerencia produtos, equipe e agenda da loja.
+- Funcionário: visualiza e opera apenas os próprios horários.
 
-- Multi-tenant por loja:
-	adicionada associacao de loja nas entidades principais e filtros de escopo no back-end.
-- Autorizacao no servidor:
-	regras de permissão são validadas na API, não apenas na interface.
-- Evolucao incremental:
-	o histórico de commits mostra ajustes de regra de negocio conforme feedback de uso.
+## Funcionalidades atuais
 
-## Stack tecnica
+- Login e registro com JWT.
+- Isolamento de dados por loja (multi-tenant).
+- Gestão de produtos da loja.
+- Gestão de funcionários (somente loja).
+- Agendamento e remarcação de horários.
+- Regras de permissão validadas no back-end.
+- Fluxo de cadastro de cliente por link da loja.
+- Feedback de sucesso/erro no front com toasts.
+
+## Stack usada
 
 ### Back-end
 - .NET 8
 - ASP.NET Core Web API
-- Entity Framework Core + PostgreSQL
-- JWT Bearer Authentication
-- BCrypt (hash de senha)
+- Entity Framework Core
+- PostgreSQL (Supabase)
+- JWT + BCrypt
 
 ### Front-end
 - React
@@ -51,27 +47,14 @@ Resolver um problema comum de operação: organizar serviços, equipe e agenda e
 - Vite
 
 ### Infra
-- Docker
-- Docker Compose
+- Docker / Docker Compose (ambiente local)
+- Render (API)
+- Vercel (front-end)
+- Supabase (banco)
 
-## Arquitetura (visao rapida)
+## Como rodar localmente
 
-- front-end:
-	interface web e consumo da API.
-- back-end:
-	autenticação, autorizacao, regras de negocio e persistencia.
-- database:
-	schema relacional para usuarios, produtos e horarios.
-
-Fluxo principal:
-1. Usuario autentica.
-2. Front-end envia JWT nas requisições protegidas.
-3. API valida token, papel e escopo da loja.
-4. Dados sao persistidos e retornados conforme permissoes.
-
-## Como executar
-
-### Opcao 1: Docker (recomendado)
+### Opção 1: Docker (mais fácil)
 
 Requisitos:
 - Docker
@@ -89,7 +72,7 @@ Acessos:
 - Swagger: http://localhost:5000/swagger
 - Banco (host): localhost:5432
 
-### Opcao 2: Execucao local
+### Opção 2: Manual
 
 Back-end:
 
@@ -107,19 +90,14 @@ npm install
 npm run dev
 ```
 
-## Qualidade e proximos passos
+## Objetivos de evolução
 
-Melhorias planejadas para maturidade de produção:
+Próximos passos que quero seguir:
 
-- Cobertura de testes automatizados (unitarios e integracao).
-- Camada de serviços para reduzir regra de negocio em controllers.
-- Migracoes versionadas de banco com EF Core.
-- Pipeline CI para build, testes e validacao automatica.
-- Observabilidade (logs estruturados e metricas).
-
-## Sobre este repositorio
-
-Este projeto representa minha evolução como dev, com foco em aprender construindo produto real: implementar, validar com feedback e refinar regras de negocio.
+- aumentar cobertura de testes
+- organizar melhor regras de negócio em serviços
+- melhorar observabilidade e logs
+- continuar refinando UX do fluxo loja/cliente
 
 ## Autor
 
