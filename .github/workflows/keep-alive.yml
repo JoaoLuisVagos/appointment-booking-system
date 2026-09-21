@@ -2,7 +2,7 @@ name: Keep Render API Alive
 
 on:
   schedule:
-    - cron: "*/14 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,4 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping health endpoint
-        run: curl --fail --silent --show-error --max-time 30 https://appointment-booking-system-tjfd.onrender.com/health/db
+        run: |
+          curl --fail --silent --show-error \
+            --retry 2 --retry-delay 20 --max-time 90 \
+            https://appointment-booking-system-tjfd.onrender.com/health/db
