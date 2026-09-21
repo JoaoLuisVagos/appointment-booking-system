@@ -1,0 +1,13 @@
+name: Keep Render API Alive
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: curl --fail --silent --show-error --max-time 30 https://appointment-booking-system-tjfd.onrender.com/health/db
