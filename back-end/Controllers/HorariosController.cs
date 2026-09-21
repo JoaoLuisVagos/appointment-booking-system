@@ -175,41 +175,49 @@ public class HorariosController : ControllerBase
             return BadRequest("Produto não pertence à loja autenticada.");
         }
 
-        horario.LojaId = lojaId.Value;
+        if (!_context.Horarios.Any(h => h.DataHora == horario.DataHora && h.LojaId == lojaId.Value))
+        {
+            horario.LojaId = lojaId.Value;
 
-        _context.Horarios.Add(horario);
-        _context.SaveChanges();
+            _context.Horarios.Add(horario);
+            _context.SaveChanges();
 
-        var createdHorario = _context.Horarios
-            .AsNoTracking()
-            .Where(h => h.Id == horario.Id && h.LojaId == lojaId.Value)
-            .Select(h => new
-            {
-                h.Id,
-                h.UsuarioId,
-                h.ProdutoId,
-                h.DataHora,
-                Usuario = h.Usuario == null
-                    ? null
-                    : new
-                    {
-                        h.Usuario.Id,
-                        h.Usuario.Nome,
-                        h.Usuario.Email,
-                        h.Usuario.Role
-                    },
-                Produto = h.Produto == null
-                    ? null
-                    : new
-                    {
-                        h.Produto.Id,
-                        h.Produto.Nome,
-                        h.Produto.Preco
-                    }
-            })
-            .Single();
+            var createdHorario = _context.Horarios
+                .AsNoTracking()
+                .Where(h => h.Id == horario.Id && h.LojaId == lojaId.Value)
+                .Select(h => new
+                {
+                    h.Id,
+                    h.UsuarioId,
+                    h.ProdutoId,
+                    h.DataHora,
+                    Usuario = h.Usuario == null
+                        ? null
+                        : new
+                        {
+                            h.Usuario.Id,
+                            h.Usuario.Nome,
+                            h.Usuario.Email,
+                            h.Usuario.Role
+                        },
+                    Produto = h.Produto == null
+                        ? null
+                        : new
+                        {
+                            h.Produto.Id,
+                            h.Produto.Nome,
+                            h.Produto.Preco
+                        }
+                })
+                .Single();
 
-        return CreatedAtAction(nameof(GetHorario), new { id = horario.Id }, createdHorario);
+            return CreatedAtAction(nameof(GetHorario), new { id = horario.Id }, createdHorario);
+        }
+        else
+        {
+            return Conflict("Já existe um horário agendado para a mesma data e hora.");
+        }
+
     }
 
     [HttpPut("{id}")]
