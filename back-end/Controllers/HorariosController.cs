@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Security.Claims;
 using back_end.Data;
 using back_end.Models;
@@ -175,12 +176,22 @@ public class HorariosController : ControllerBase
             return BadRequest("Produto não pertence à loja autenticada.");
         }
 
-        if (!_context.Horarios.Any(h => h.DataHora == horario.DataHora && h.LojaId == lojaId.Value))
+        if (!_context.Horarios.Any(h =>
+                h.LojaId == lojaId.Value
+                && h.UsuarioId == horario.UsuarioId
+                && h.DataHora == horario.DataHora))
         {
             horario.LojaId = lojaId.Value;
 
             _context.Horarios.Add(horario);
-            _context.SaveChanges();
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException exception) when (IsScheduleConflict(exception))
+            {
+                return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
+            }
 
             var createdHorario = _context.Horarios
                 .AsNoTracking()
@@ -215,7 +226,7 @@ public class HorariosController : ControllerBase
         }
         else
         {
-            return Conflict("Já existe um horário agendado para a mesma data e hora.");
+            return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
         }
 
     }
@@ -268,11 +279,27 @@ public class HorariosController : ControllerBase
             return BadRequest("Produto não pertence à loja autenticada.");
         }
 
+        if (_context.Horarios.Any(h =>
+                h.Id != id
+                && h.LojaId == lojaId.Value
+                && h.UsuarioId == horario.UsuarioId
+                && h.DataHora == horario.DataHora))
+        {
+            return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
+        }
+
         existingHorario.UsuarioId = horario.UsuarioId;
         existingHorario.ProdutoId = horario.ProdutoId;
         existingHorario.DataHora = horario.DataHora;
         existingHorario.LojaId = lojaId.Value;
-        _context.SaveChanges();
+        try
+        {
+            _context.SaveChanges();
+        }
+        catch (DbUpdateException exception) when (IsScheduleConflict(exception))
+        {
+            return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
+        }
         return NoContent();
     }
 
@@ -339,8 +366,24 @@ public class HorariosController : ControllerBase
             return Forbid();
         }
 
+        if (_context.Horarios.Any(h =>
+                h.Id != id
+                && h.LojaId == lojaId.Value
+                && h.UsuarioId == horario.UsuarioId
+                && h.DataHora == request.DataHora))
+        {
+            return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
+        }
+
         horario.DataHora = request.DataHora;
-        _context.SaveChanges();
+        try
+        {
+            _context.SaveChanges();
+        }
+        catch (DbUpdateException exception) when (IsScheduleConflict(exception))
+        {
+            return Conflict("Já existe um horário agendado para o mesmo funcionário, data e hora.");
+        }
 
         var updatedHorario = _context.Horarios
             .AsNoTracking()
@@ -414,5 +457,14 @@ public class HorariosController : ControllerBase
             .Where(u => u.Id == userId.Value)
             .Select(u => u.LojaId)
             .SingleOrDefault();
+    }
+
+    private static bool IsScheduleConflict(DbUpdateException exception)
+    {
+        var postgresException = exception.InnerException as PostgresException
+            ?? exception.InnerException?.InnerException as PostgresException;
+
+        return postgresException?.SqlState == PostgresErrorCodes.UniqueViolation
+            && postgresException.ConstraintName == "ux_horarios_loja_usuario_data_hora";
     }
 }

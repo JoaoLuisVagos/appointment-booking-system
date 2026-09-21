@@ -191,6 +191,7 @@ if (shouldInitializeDatabase)
         ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS complemento VARCHAR(120) NULL");
         ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE produtos ADD COLUMN IF NOT EXISTS loja_id INTEGER NULL");
         ExecuteSqlIgnoringKnownErrors(db, "ALTER TABLE horarios ADD COLUMN IF NOT EXISTS loja_id INTEGER NULL");
+        ExecuteSqlIgnoringKnownErrors(db, "CREATE UNIQUE INDEX IF NOT EXISTS ux_horarios_loja_usuario_data_hora ON horarios (loja_id, usuario_id, data_hora)");
 
         ExecuteSqlIgnoringKnownErrors(db, "UPDATE usuarios SET loja_id = id WHERE role = 'loja' AND (loja_id IS NULL OR loja_id = 0)");
 

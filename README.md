@@ -32,6 +32,12 @@ Observação: como a API está em plano gratuito, a primeira requisição pode d
 - Fluxo de cadastro de cliente por link da loja.
 - Feedback de sucesso/erro no front com toasts.
 
+### Regra de conflito de horários
+
+- Um funcionário não pode ter dois agendamentos na mesma loja com a mesma data e hora.
+- A checagem considera apenas igualdade exata de data e hora. Sobreposição entre serviços ainda não é calculada porque o modelo não possui a duração do produto.
+- A regra é protegida por um índice único no banco, e a API retorna conflito quando requisições simultâneas tentam criar ou mover o mesmo horário.
+
 ## Stack usada
 
 ### Back-end

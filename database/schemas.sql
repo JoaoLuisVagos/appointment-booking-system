@@ -43,3 +43,6 @@ CREATE TABLE IF NOT EXISTS horarios (
     CONSTRAINT fk_horarios_produto FOREIGN KEY (produto_id) REFERENCES produtos(id),
     CONSTRAINT fk_horarios_loja FOREIGN KEY (loja_id) REFERENCES lojas(id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_horarios_loja_usuario_data_hora
+    ON horarios (loja_id, usuario_id, data_hora);
